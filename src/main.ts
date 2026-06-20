@@ -1,6 +1,7 @@
 import { Buffer } from "buffer";
 globalThis.Buffer = Buffer;
 import JSZip from "jszip";
+import { parseGIF, decompressFrames } from "gifuct-js";
 
 import { colorTable } from "./color_table";
 import { colorToString, findIndexOfNearestColor, getPixelOnCanvas, gzip, isValidTag, MC_MAP_SIZE } from "./util";
@@ -114,12 +115,22 @@ function autoName(fileName: string) {
   return currentFileName;
 }
 
-async function drawImage() {
+async function drawCurrentImage() {
   const image = imageInput.files![currentIndex];
-  const img = new Image();
-  img.src = URL.createObjectURL(image);
-  await img.decode();
-  mapNameInput.value = autoName(image.name);
+  const url = URL.createObjectURL(image);
+  return await drawImage(url, image.name, 1);
+}
+
+async function drawImage(url: string, name: string, frame: number, canvas? : HTMLCanvasElement) {
+  let img : CanvasImageSource;
+  if (!canvas) {
+    img = new Image();
+    img.src = url;
+    await img.decode();
+  } else {
+    img = canvas;
+  }
+  mapNameInput.value = settingsList[currentIndex]?.mapName || autoName(name);
   if (autoSizeCheckbox.checked) {
     widthInput.value = '' + Math.ceil(img.width / MC_MAP_SIZE);
     heightInput.value = '' + Math.ceil(img.height / MC_MAP_SIZE);
@@ -133,7 +144,7 @@ async function drawImage() {
     mapsHeight: s.mapsHeight,
     ticksPerFrame: s.ticksPerFrame,
     startingIndex: mapIndex,
-    frames: 1
+    frames: frame
   };
   
   currentImage.width = s.mapsWidth * MC_MAP_SIZE;
@@ -160,85 +171,118 @@ async function drawImage() {
     fitSetting.value === 'resize' ? currentImage.height : img.height);
 }
 
-async function processImage() {
-  const s = settingsList[currentIndex];
-  for (let i = 0; i < s.mapsHeight; ++i) {
-    for (let j = 0; j < s.mapsWidth; ++j) {
-      const imgData = ctx.getImageData(j * MC_MAP_SIZE, i * MC_MAP_SIZE, MC_MAP_SIZE, MC_MAP_SIZE);
-      const nbtValues = new Int8Array(MC_MAP_SIZE * MC_MAP_SIZE);
-      for (let x = 0; x < MC_MAP_SIZE; ++x) {
-        for (let y = 0; y < MC_MAP_SIZE; ++y) {
-          const pixel = getPixelOnCanvas(x, y, imgData);
-          if (pixel[1] > opacityThreshold) {
-            const indexOfNearestColor = findIndexOfNearestColor(pixel[0], colorTable);
-            nbtValues[y * MC_MAP_SIZE + x] = indexOfNearestColor + 4;
-            const nearestColor = colorToString(colorTable[indexOfNearestColor]);
-            preview_ctx.fillStyle = nearestColor;
-            preview_ctx.fillRect(x, y, 1, 1);
-          } else {
-            nbtValues[y * MC_MAP_SIZE + x] = 0;
-          }
-        }
+async function mapFromImageData(imgData: ImageData) {
+  const nbtValues = new Int8Array(MC_MAP_SIZE * MC_MAP_SIZE);
+  preview_ctx.clearRect(0, 0, previewImage.width, previewImage.height);
+  for (let x = 0; x < MC_MAP_SIZE; ++x) {
+    for (let y = 0; y < MC_MAP_SIZE; ++y) {
+      const pixel = getPixelOnCanvas(x, y, imgData);
+      if (pixel[1] > opacityThreshold) {
+        const indexOfNearestColor = findIndexOfNearestColor(pixel[0], colorTable);
+        nbtValues[y * MC_MAP_SIZE + x] = indexOfNearestColor + 4;
+        const nearestColor = colorToString(colorTable[indexOfNearestColor]);
+        preview_ctx.fillStyle = nearestColor;
+        preview_ctx.fillRect(x, y, 1, 1);
+      } else {
+        nbtValues[y * MC_MAP_SIZE + x] = 0;
       }
-      const mapNBT = {
-        name: '',
+    }
+  }
+  const mapNBT = {
+    name: '',
+    type: TAG.COMPOUND,
+    val: [
+      {
+        name: 'data',
         type: TAG.COMPOUND,
         val: [
           {
-            name: 'data',
-            type: TAG.COMPOUND,
-            val: [
-              {
-                name: 'scale',
-                type: TAG.BYTE,
-                val: 0
-              },
-              {
-                name: 'dimension',
-                type: TAG.STRING,
-                val: 'minecraft:overworld'
-              },
-              {
-                name: 'trackingPosition',
-                type: TAG.BYTE,
-                val: 0
-              },
-              {
-                name: 'locked',
-                type: TAG.BYTE,
-                val: 1
-              },
-              {
-                name: 'xCenter',
-                type: TAG.INT,
-                val: 0
-              },
-              {
-                name: 'zCenter',
-                type: TAG.INT,
-                val: 0
-              },
-              {
-                name: 'colors',
-                type: TAG.BYTEARRAY,
-                val: nbtValues
-              }
-            ]
+            name: 'scale',
+            type: TAG.BYTE,
+            val: 0
+          },
+          {
+            name: 'dimension',
+            type: TAG.STRING,
+            val: 'minecraft:overworld'
+          },
+          {
+            name: 'trackingPosition',
+            type: TAG.BYTE,
+            val: 0
+          },
+          {
+            name: 'locked',
+            type: TAG.BYTE,
+            val: 1
+          },
+          {
+            name: 'xCenter',
+            type: TAG.INT,
+            val: 0
+          },
+          {
+            name: 'zCenter',
+            type: TAG.INT,
+            val: 0
+          },
+          {
+            name: 'colors',
+            type: TAG.BYTEARRAY,
+            val: nbtValues
           }
         ]
       }
-      const nbtData = NbtWriter.writeTag(mapNBT);
-      maps_zip.file((mapIndex++) + '.dat', await gzip(nbtData));
+    ]
+  }
+  const nbtData = NbtWriter.writeTag(mapNBT);
+  maps_zip.file((mapIndex++) + '.dat', await gzip(nbtData));
+}
+
+async function processImage() {
+  const s = settingsList[currentIndex];
+  const image = imageInput.files![currentIndex];
+  if (image.type === 'image/gif') {
+    const gif = parseGIF(await image.arrayBuffer());
+    const frames = decompressFrames(gif, true);
+    const auxillaryCanvas = document.createElement('canvas');
+    const auxillary_ctx = auxillaryCanvas.getContext('2d')!;
+    auxillaryCanvas.width = gif.lsd.width;
+    auxillaryCanvas.height = gif.lsd.height;
+    
+    for (let f = 0; f < frames.length; ++f) {
+      const frame = frames[f];
+      const imageDataPreprocessed = auxillary_ctx.createImageData(frame.dims.width, frame.dims.height);
+      imageDataPreprocessed.data.set(frame.patch);
+      const tertiaryCanvas = document.createElement('canvas');
+      tertiaryCanvas.width = frame.dims.width;
+      tertiaryCanvas.height = frame.dims.height;
+      const tertiary_ctx = tertiaryCanvas.getContext('2d')!;
+      tertiary_ctx.putImageData(imageDataPreprocessed, 0, 0);
+      auxillary_ctx.drawImage(tertiaryCanvas, frame.dims.left, frame.dims.top)
+      drawImage('', '', f+1, auxillaryCanvas);  
+      for (let i = 0; i < s.mapsHeight; ++i) {
+        for (let j = 0; j < s.mapsWidth; ++j) {
+          const imgData = ctx.getImageData(j * MC_MAP_SIZE, i * MC_MAP_SIZE, MC_MAP_SIZE, MC_MAP_SIZE);
+          await mapFromImageData(imgData);
+        }
+      }
+    }
+   } else {
+    for (let i = 0; i < s.mapsHeight; ++i) {
+      for (let j = 0; j < s.mapsWidth; ++j) {
+        const imgData = ctx.getImageData(j * MC_MAP_SIZE, i * MC_MAP_SIZE, MC_MAP_SIZE, MC_MAP_SIZE);
+        await mapFromImageData(imgData);
+      }
     }
   }
-  
 }
 
 async function loadImage() {
   previousImageButton.disabled = (finishing || currentIndex === 0);
   nextImageButton.disabled = (finishing || currentIndex === numFiles - 1);
   currentIndexText.innerText = '' + (currentIndex + 1);
-  await drawImage();
+  await drawCurrentImage();
 }
 
 
@@ -346,10 +390,6 @@ newMapButton.addEventListener('click', () => {
   }
 })
 
-async function drawImage_() {
-  await drawImage();
-}
-
 function generateItemFrameCommand() {
   const glow = glowItemFrameCheckbox.checked ? 'glow_' : '';
   const invis = invisibleItemFrameCheckbox.checked ? 'Invisible:1b,' : '';
@@ -363,9 +403,9 @@ function generateItemFrameCommand() {
   commandLengthWarning.style.display = itemFrameCommand.value.length > 256 ? 'block' : 'none';
 }
 
-widthInput.addEventListener('change', drawImage_);
-heightInput.addEventListener('change', drawImage_);
-fitSetting.addEventListener('change', drawImage_);
+widthInput.addEventListener('change', drawCurrentImage);
+heightInput.addEventListener('change', drawCurrentImage);
+fitSetting.addEventListener('change', drawCurrentImage);
 glowItemFrameCheckbox.addEventListener('change', generateItemFrameCommand);
 invisibleItemFrameCheckbox.addEventListener('change', generateItemFrameCommand);
 nameItemFrameCheckbox.addEventListener('change', generateItemFrameCommand);
