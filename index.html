@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head><title>Minecraft Animated Map Art Generator</title></head>
+  <body>
+    <label>Insert file(s)</label>
+    <input id="imageInput" type="file" accept="image/png image/jpeg" multiple><br>
+
+    <label>Select version:</label><select id="versionSelect">
+      <option value="4786" selected>Java 26.1+</option>
+    </select><br>
+
+    <button id="submitButton">Submit</button><br>
+
+    <label>Starting index:</label> <input type="number" min="0" value="0" id="mapIndexInput"><br>
+
+    <label>Auto increment index:</label> <input type="checkbox" id="incrementIndexCheckbox" checked><br>
+
+    <p>Current image: <span id="currentIndexText">0</span> of <span id="totalImagesText">0</span> (Map ID: <span id="currentMapIndexText"></span>)</p>
+
+    <span>
+      <button id="previousImageButton">Previous image</button>
+      <button id="nextImageButton">Next image</button>
+      <button id="finishButton">Finish</button>
+      <button id="cancelButton">Cancel</button>
+    </span>
+
+    <div id="mapSettings">
+      <label>Name (must be unique per world): </label> <input type="text" id="mapNameInput" value="map"><br>
+      <span><label>Size: </label><input type="number" value="1" id="widthInput" min="1"> by <input type="number" value="1" id="heightInput" min="1"> maps</span><br>
+
+      <label>Auto size: </label><input type="checkbox" id="autoSizeCheckbox" checked><br>
+
+      <label>Fit: </label><select id="fitSetting">
+        <option value="resize">Resize to fit</option>
+        <option value="center">Center</option>
+        <option value="topLeft">Top left</option>
+        <option value="topRight">Top right</option>
+        <option value="bottomLeft">Bottom left</option>
+        <option value="bottomRight">Bottom right</option>
+      </select><br>
+
+      <label>Frame rate: </label><select id="ticksPerFrameSetting">
+        <option value="1">20</option>
+        <option value="2">10</option>
+        <option value="3">6.67</option>
+        <option value="4">5</option>
+        <option value="5">4</option>
+        <option value="6">3.33</option>
+        <option value="8">2.5</option>
+        <option value="10">2</option>
+        <option value="12">1.67</option>
+        <option value="15">1.33</option>
+        <option value="20">1</option>
+      </select>
+    </div>
+
+    <p>Original</p>
+    <canvas id="currentImage" width="128" height="128"></canvas><br>
+
+    <p>Preview</p>
+    <canvas id="previewImage" width="128" height="128"></canvas><br>
+
+    <div id="resultsSection">
+      <a id="downloadButton" href="">Download final map</a><br>
+      <a id="downloadDataPackButton" href="">Download data pack</a><br>
+      <label>Copy command:</label><br>
+      <textarea id="itemFrameCommand"></textarea><br>
+      <p id="commandLengthWarning">This command must be run in a command block as it is too long for chat.</p>
+      <label>Map: </label><select id="mapSelect"></select><br>
+      <label>Glow item frame: </label><input id="glowItemFrameCheckbox" type="checkbox">
+      <label>Invisible item frame: </label><input id="invisibleItemFrameCheckbox" type="checkbox">
+      <label>Name item frame: </label><input id="nameItemFrameCheckbox" type="checkbox">
+      <button id="newMapButton">Go again</button>
+    </div>
+
+  </body>
+
+  <script type="module" src="/src/main.ts"></script>
+</html>
