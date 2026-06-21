@@ -143,7 +143,7 @@ async function drawImage(url: string, name: string, frame: number, canvas? : HTM
     mapsWidth: s.mapsWidth,
     mapsHeight: s.mapsHeight,
     ticksPerFrame: s.ticksPerFrame,
-    startingIndex: mapIndex,
+    startingIndex: mapData[currentIndex] ? mapData[currentIndex].startingIndex : mapIndex,
     frames: frame
   };
   
@@ -367,10 +367,10 @@ finishButton.addEventListener('click', async () => {
     const datapack = await generateDataPack(mapData);
     downloadDataPackButton.href = URL.createObjectURL(datapack);
     downloadDataPackButton.download = 'maps_datapack.zip';
-    for (const index in mapData) {
+    for (let i = 0; i < mapData.length; ++i) {
       const option = document.createElement('option');
-      option.value = index;
-      option.innerText = mapData[index].mapName;
+      option.value = '' + mapData[i].startingIndex;
+      option.innerText = mapData[i].mapName;
       mapSelect.appendChild(option);
     }
     generateItemFrameCommand();
