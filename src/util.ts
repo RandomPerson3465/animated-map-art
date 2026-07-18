@@ -46,11 +46,16 @@ export function isValidTag(str: string) {
     return str.match(/[^0-9|A-Z|a-z|\_\-\.]/) === null && !str.endsWith('.');
 }
 
-export function idGen() {
+export function idGen(length: number) {
     const validChars = '0123456789abcdefghijklmnopqrstuvwxyz-_';
     let id = '';
-    for (let i = 0; i < 12; ++i) {
+    for (let i = 0; i < length; ++i) {
         id += validChars[Math.floor(Math.random() * validChars.length)];
     }
-    return 'animated_map_art_' + id;
+    return id;
 }
+
+export function toggleAll(elem: HTMLElement, disabled: boolean) {
+    const elems = elem.querySelectorAll<HTMLButtonElement|HTMLSelectElement|HTMLInputElement|HTMLTextAreaElement>('button,select,input,textarea');
+    elems.forEach(e => e.disabled = disabled);
+} 

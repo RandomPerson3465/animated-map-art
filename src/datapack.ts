@@ -40,8 +40,8 @@ export interface mapInfo {
     frames: number,
 }
 
-function generateBuildMapCommand_1_21(id: string, mapData: mapInfo[], funcFolder: JSZip) {
-    let result = 'execute as @a run execute unless score @s cache_${id} matches -1.. run scoreboard players set @s cache_${id} -1\n'
+function generateBuildMapCommand_1_21(id: string, namespace: string, mapData: mapInfo[], funcFolder: JSZip) {
+    let result = 'execute as @a run execute unless score @s c_${id} matches -1.. run scoreboard players set @s c_${id} -1\n'
     + 'scoreboard players enable @a';
     for (const info of mapData) {
 
@@ -49,25 +49,25 @@ function generateBuildMapCommand_1_21(id: string, mapData: mapInfo[], funcFolder
             const mapsSize = info.mapsWidth * info.mapsHeight;
             const nextIndex = info.startingIndex + mapsSize * info.frames;
             funcFolder.file(`animate_${info.startingIndex}.mcfunction`, 
-                `scoreboard players set ${info.startingIndex} size_${id} ${mapsSize}\n`
-                + `execute as @e[type=item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute unless score @s frame_${id} matches 0.. run scoreboard players operation @s frame_${id} = @s init_${id}\n`
-                + `execute as @e[type=glow_item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute unless score @s frame_${id} matches 0.. run scoreboard players operation @s frame_${id} = @s init_${id}\n`
-                + `execute as @e[type=item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute unless score @s frame_${id} matches ${nextIndex}.. run scoreboard players operation @s frame_${id} += ${info.startingIndex} size_${id}\n`
-                + `execute as @e[type=item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute if score @s frame_${id} matches ${nextIndex}.. run scoreboard players operation @s frame_${id} = @s init_${id}\n`
-                + `execute as @e[type=glow_item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute unless score @s frame_${id} matches ${nextIndex}.. run scoreboard players operation @s frame_${id} += ${info.startingIndex} size_${id}\n`
-                + `execute as @e[type=glow_item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute if score @s frame_${id} matches ${nextIndex}.. run scoreboard players operation @s frame_${id} = @s init_${id}\n`
-                + `execute as @e[type=item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute store result entity @s Item.components.minecraft:map_id int 1 run scoreboard players get @s frame_${id}\n`
-                + `execute as @e[type=glow_item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute store result entity @s Item.components.minecraft:map_id int 1 run scoreboard players get @s frame_${id}\n`
-                + `schedule function ${id}:animate_${info.startingIndex} ${info.ticksPerFrame}t`
+                `scoreboard players set ${info.startingIndex} s_${id} ${mapsSize}\n`
+                + `execute as @e[type=item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute unless score @s f_${id} matches 0.. run scoreboard players operation @s f_${id} = @s i_${id}\n`
+                + `execute as @e[type=glow_item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute unless score @s f_${id} matches 0.. run scoreboard players operation @s f_${id} = @s i_${id}\n`
+                + `execute as @e[type=item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute unless score @s f_${id} matches ${nextIndex}.. run scoreboard players operation @s f_${id} += ${info.startingIndex} s_${id}\n`
+                + `execute as @e[type=item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute if score @s f_${id} matches ${nextIndex}.. run scoreboard players operation @s f_${id} = @s i_${id}\n`
+                + `execute as @e[type=glow_item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute unless score @s f_${id} matches ${nextIndex}.. run scoreboard players operation @s f_${id} += ${info.startingIndex} s_${id}\n`
+                + `execute as @e[type=glow_item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute if score @s f_${id} matches ${nextIndex}.. run scoreboard players operation @s f_${id} = @s i_${id}\n`
+                + `execute as @e[type=item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute store result entity @s Item.components.minecraft:map_id int 1 run scoreboard players get @s f_${id}\n`
+                + `execute as @e[type=glow_item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute store result entity @s Item.components.minecraft:map_id int 1 run scoreboard players get @s f_${id}\n`
+                + `schedule function ${namespace}:animate_${info.startingIndex} ${info.ticksPerFrame}t`
             );
             let cacheFunc = '';
             for (let i = info.startingIndex; i < nextIndex; ++i) {
-                cacheFunc += `execute as @a run execute if score @s cache_${id} matches ${i} run item replace entity @s weapon.offhand with filled_map[map_id=${i}]\n`
+                cacheFunc += `execute as @a run execute if score @s c_${id} matches ${i} run item replace entity @s weapon.offhand with filled_map[map_id=${i}]\n`
             }
-            cacheFunc += (`execute as @a run execute if score @s cache_${id} matches ${info.startingIndex}..${nextIndex-1} run scoreboard players add @s cache_${id} 1\n`
-                + `execute as @a run execute if score @s cache_${id} matches ${nextIndex} run scoreboard players set @s cache_${id} -1\n`
-                + `schedule function ${id}:cache_${info.startingIndex} 1t\n`);
-            funcFolder.file(`cache_${info.startingIndex}.mcfunction`, cacheFunc);
+            cacheFunc += (`execute as @a run execute if score @s c_${id} matches ${info.startingIndex}..${nextIndex-1} run scoreboard players add @s c_${id} 1\n`
+                + `execute as @a run execute if score @s c_${id} matches ${nextIndex} run scoreboard players set @s c_${id} -1\n`
+                + `schedule function ${namespace}:c_${info.startingIndex} 1t\n`);
+            funcFolder.file(`c_${info.startingIndex}.mcfunction`, cacheFunc);
         }
 
         for (let f = 0; f < 24; ++f) {
@@ -83,18 +83,19 @@ function generateBuildMapCommand_1_21(id: string, mapData: mapInfo[], funcFolder
                 }
             }
         }
-        result += (`execute as @e[type=item_frame,tag=${info.mapName}] run execute unless score @s init_${id} matches 0.. run execute store result score @s init_${id} run data get entity @s Item.components.minecraft:map_id\n`
-        + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute unless score @s init_${id} matches 0.. run execute store result score @s init_${id} run data get entity @s Item.components.minecraft:map_id\n`
+        result += (`execute as @e[type=item_frame,tag=${info.mapName}] run execute unless score @s i_${id} matches 0.. run execute store result score @s i_${id} run data get entity @s Item.components.minecraft:map_id\n`
+        + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute unless score @s i_${id} matches 0.. run execute store result score @s i_${id} run data get entity @s Item.components.minecraft:map_id\n`
         + `execute as @e[type=item_frame,tag=${info.mapName},nbt={Air:${ITEM_FRAME_AIR_TAG}s}] run data merge entity @s {Air:300s}\n`
         + `execute as @e[type=glow_item_frame,tag=${info.mapName},nbt={Air:${ITEM_FRAME_AIR_TAG}s}] run data merge entity @s {Air:300s}\n`)
     }
-    result += `schedule function ${id}:build_map 1t`;
+    result += `schedule function ${namespace}:build_map 1t`;
     return result;
 }
 
 export async function generateDataPack(mapData: mapInfo[]) {
   const datapack = new JSZip();
-  const id = idGen();
+  const id = idGen(14);
+  const namespace = 'animated_map_art_' + id;
   const meta = {
     pack: {
       description: PACK_DESCRIPTION,
@@ -117,26 +118,30 @@ export async function generateDataPack(mapData: mapInfo[]) {
   mcLoadFolder.file('load.json', JSON.stringify(loadJson));
   const funcFolder = dataFolder.folder(id)!.folder('function')!;
 
-  let starterFunc = `scoreboard objectives add init_${id} dummy\n`
-    + `scoreboard objectives add frame_${id} dummy\n`
-    + `scoreboard objectives add size_${id} dummy\n`
-    + `scoreboard objectives add cache_${id} trigger\n`;
+  // Scoreboard objectives are 16 characters for compatibility reasons (pre-1.18)
+  let starterFunc = `scoreboard objectives add i_${id} dummy\n` // init
+    + `scoreboard objectives add f_${id} dummy\n` // frame
+    + `scoreboard objectives add s_${id} dummy\n` // size
+    + `scoreboard objectives add c_${id} trigger\n`; // cache scoreboard
 
   for (const info of mapData) {
     if (info.frames > 1) {
-        starterFunc += `schedule function ${id}:animate_${info.startingIndex} ${info.ticksPerFrame}t\n`;
-        starterFunc += `function ${id}:cache_${info.startingIndex}\n`;
+        starterFunc += `schedule function ${namespace}:animate_${info.startingIndex} ${info.ticksPerFrame}t\n`;
+        starterFunc += `function ${namespace}:c_${info.startingIndex}\n`;
     }
   }
 
-  funcFolder.file('starter.mcfunction', starterFunc + (starterFunc.endsWith('\n') ? '' : '\n') + `function ${id}:build_map`);
+  funcFolder.file('starter.mcfunction', starterFunc + (starterFunc.endsWith('\n') ? '' : '\n') + `function ${namespace}:build_map`);
   
-  funcFolder.file('build_map.mcfunction', generateBuildMapCommand_1_21(id, mapData, funcFolder));
-  return datapack.generateAsync({ 
-    type: 'blob',
-    compression: "DEFLATE",
-    compressionOptions: {
-        level: 9
-    }
-  });
+  funcFolder.file('build_map.mcfunction', generateBuildMapCommand_1_21(id, namespace, mapData, funcFolder));
+  return {
+    pack: await datapack.generateAsync({ 
+        type: 'blob',
+        compression: "DEFLATE",
+        compressionOptions: {
+            level: 9
+        }
+    }),
+    id: id,
+  };
 }

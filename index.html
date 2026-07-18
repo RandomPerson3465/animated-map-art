@@ -14,30 +14,33 @@
       <strong>WARNING:</strong> Large maps may cause your Minecraft to lag or crash. Please be reasonable when using this tool.
     </div>
 
-    <div class="mb-3 mt-3">
-      <label for="imageInput" class="form-label">Insert file(s)</label>
-      <input id="imageInput" class="form-control" type="file" accept="image/png image/jpeg image/gif" multiple>
-    </div>
+    <div id="firstStuff">
+      <div class="mb-3 mt-3">
+        <label for="imageInput" class="form-label">Insert file(s)</label>
+        <input id="imageInput" class="form-control" type="file" accept=".png,.jpg,.jpeg,.gif,image/png,image/jpeg,image/gif" multiple>
+      </div>
 
-    <div class="settings-container">
-      <div class="mb-3 mt-3">
-        <label for="versionSelect" class="form-label">Select version:</label><select id="versionSelect" class="form-select l-width">
-          <option value="4786" selected>Java 26.1+</option>
-          <option value="3953">Java 1.21-1.21.11</option>
-          <option value="3837">Java 1.20.5-1.20.6</option>
-        </select>
+      <div class="settings-container">
+        <div class="mb-3 mt-3">
+          <label for="versionSelect" class="form-label">Select version:</label><select id="versionSelect" class="form-select l-width">
+            <option value="4786" selected>Java 26.1+</option>
+            <option value="3953">Java 1.21-1.21.11</option>
+            <option value="3837">Java 1.20.5-1.20.6</option>
+          </select>
+        </div>
+        <div class="mb-3 mt-3">
+          <label for="mapIndexInput" class="form-label">Starting index: <i class="bi bi-info-circle-fill" data-bs-toggle="tooltip" title="The first number that isn't already used in your .minecraft/data/maps folder. This will be the ID of the first map."></i></label><input type="number" min="0" value="0" id="mapIndexInput" class="form-control m-width">
+        </div>
+        <div class="mb-3 mt-3">
+          <label for="incrementIndexCheckbox" class="form-label">Auto increment index:</label> <input type="checkbox" id="incrementIndexCheckbox" class="form-check-input" checked>
+        </div>
       </div>
-      <div class="mb-3 mt-3">
-        <label for="mapIndexInput" class="form-label">Starting index: <i class="bi bi-info-circle-fill" data-bs-toggle="tooltip" title="The first number that isn't already used in your .minecraft/data/maps folder. This will be the ID of the first map."></i></label><input type="number" min="0" value="0" id="mapIndexInput" class="form-control m-width">
-      </div>
-      <div class="mb-3 mt-3">
-        <label for="incrementIndexCheckbox" class="form-label">Auto increment index:</label> <input type="checkbox" id="incrementIndexCheckbox" class="form-check-input" checked>
-      </div>
-    </div>
 
-    <button id="submitButton" class="btn btn-primary">Submit</button><br>
+      <button id="submitButton" class="btn btn-primary">Submit</button><br>
+    </div>
 
     <div id="afterSubmittingStuff" class="after-submitting-stuff">
+      <hr>
       <p>Current image: <span id="currentIndexText">0</span> of <span id="totalImagesText">0</span></p>
       <p>Status: <span id="statusText"></span></p>
 
@@ -109,16 +112,36 @@
     </div>
 
     <div id="resultsSection">
-      <a id="downloadButton" href="">Download final map</a><br>
-      <a id="downloadDataPackButton" href="">Download data pack</a><br>
-      <label>Copy command:</label><br>
-      <textarea id="itemFrameCommand"></textarea><br>
-      <p id="commandLengthWarning">This command must be run in a command block as it is too long for chat.</p>
-      <label>Map: </label><select id="mapSelect"></select><br>
-      <label>Glow item frame: </label><input id="glowItemFrameCheckbox" type="checkbox">
-      <label>Invisible item frame: </label><input id="invisibleItemFrameCheckbox" type="checkbox">
-      <label>Name item frame: </label><input id="nameItemFrameCheckbox" type="checkbox">
-      <button id="newMapButton">Go again</button>
+      <hr>
+      <a id="downloadButton" class="btn btn-primary" href=""><i class="bi bi-map"></i> Download maps (.zip)</a><br>
+      <a id="downloadDataPackButton" class="btn btn-secondary" href=""><i class="bi bi-box-seam-fill"></i> Download data pack (.zip)</a><br>
+      <div class="mb-3 mt-3">
+        <label for="mapSelect" class="form-label">Map: </label><select id="mapSelect" class="form-select xl-width"></select>
+      </div>
+      <div class="mb-3 mt-3">
+        <label for="glowItemFrameCheckbox" class="form-label">Glow item frame:</label> <input id="glowItemFrameCheckbox" type="checkbox" class="form-check-input">
+      </div>
+      <div class="mb-3 mt-3">
+        <label for="invisibleItemFrameCheckbox" class="form-label">Invisible item frame:</label> <input id="invisibleItemFrameCheckbox" type="checkbox" class="form-check-input">
+      </div>
+      <div class="mb-3 mt-3">
+        <label for="nameItemFrameCheckbox" class="form-label">Name item frame:</label> <input id="nameItemFrameCheckbox" type="checkbox" class="form-check-input">
+      </div>
+      <div class="mb-3 mt-3">
+        <label for="itemFrameCommand">Command:</label><br>
+        <textarea id="itemFrameCommand" class="form-control"></textarea><br>
+        <p id="commandLengthWarning" class="text-danger"><i class="bi bi-exclamation-triangle"></i> This command must be run in a command block as it is too long for chat.</p>
+        <button id="copyCommand" class="btn btn-secondary" copy="itemFrameCommand"><i class="bi bi-copy"></i> Copy command</button><br>
+      </div>
+      <div id="cacheCommandStuff" class="mb-3 mt-3">
+        <label for="cacheCommand">Cache command:</label>
+        <textarea id="cacheCommand" class="form-control"></textarea>
+        <p>This command stops the animated map art from flickering. It uses your offhand slot to cycle through all the maps.</p>
+        <p class="text-warning"><i class="bi bi-exclamation-triangle"></i><strong>WARNING: </strong> You will lose the item in your offhand slot after running this command.</p>
+        <button id="copyCacheCommand" class="btn btn-secondary" copy="cacheCommand"><i class="bi bi-copy"></i> Copy caching command</button>
+      </div>
+      
+      <button id="newMapButton" class="btn btn-secondary"><i class="bi bi-arrow-repeat"></i> Go again</button>
     </div>
 
   </body>

@@ -2,6 +2,8 @@ import './style.scss';
 import * as bootstrap from 'bootstrap'
 import { Buffer } from "buffer";
 import initializeTooltips from './tooltips';
+import initializeCopyButtons from './copyButtons'
+import * as commandGenerator from './command'
 
 
 globalThis.Buffer = Buffer;
@@ -9,11 +11,11 @@ import JSZip from "jszip";
 import { parseGIF, decompressFrames } from "gifuct-js";
 
 import { colorTable } from "./color_table";
-import { colorToString, findIndexOfNearestColor, getPixelOnCanvas, gzip, isValidTag, MC_MAP_SIZE } from "./util";
+import { colorToString, findIndexOfNearestColor, getPixelOnCanvas, gzip, isValidTag, MC_MAP_SIZE, toggleAll } from "./util";
 import { TAG, NbtWriter } from "node-nbt";
-import { generateDataPack, ITEM_FRAME_AIR_TAG, type mapInfo } from "./datapack";
+import { generateDataPack, type mapInfo } from "./datapack";
 
-
+initializeCopyButtons();
 initializeTooltips();
 
 function e<T extends HTMLElement>(id: string) {
@@ -62,6 +64,9 @@ const commandLengthWarning = e<HElem>('commandLengthWarning');
 const opacityThresholdSetting = e<HInput>('opacityThresholdSetting');
 const opacityValue = e<HElem>('opacityValue');
 const afterSubmittingStuff = e<HDiv>('afterSubmittingStuff');
+const cacheCommand = e<HTextArea>('cacheCommand');
+const cacheCommandStuff = e<HDiv>('cacheCommandStuff');
+const firstStuff = e<HDiv>('firstStuff');
 
 const ctx = currentImage.getContext('2d', { willReadFrequently: true })!;
 const preview_ctx = previewImage.getContext('2d')!;
@@ -104,6 +109,11 @@ function getSettings() {
     mapsHeight: parseInt(heightInput.value) || 1,
     ticksPerFrame: parseInt(ticksPerFrameSetting.value) || 1
   }
+
+  if (mapData[currentIndex]) {
+    mapData[currentIndex].mapName = settingsList[currentIndex].mapName;
+    mapData[currentIndex].ticksPerFrame = settingsList[currentIndex].ticksPerFrame;
+  }
   return true;
 }
 
@@ -121,6 +131,7 @@ let currentIndex = 0;
 let numFiles = 0;
 let maps_zip : JSZip;
 let finishing = false;
+let datapackId = '';
 
 function autoName(fileName: string) {
   const dotPos = fileName.lastIndexOf('.');
@@ -149,7 +160,7 @@ async function drawImage(url: string, name: string, frame: number, canvas? : HTM
   if (!canvas) {
     img = new Image();
     img.src = url;
-    await img.decode();
+    await img.decode().catch(() => {});
   } else {
     img = canvas;
   }
@@ -331,11 +342,10 @@ submitButton.addEventListener('click', async () => {
   mapIndex = parseInt(mapIndexInput.value) || 0;
 
   
-  imageInput.disabled = true;
+  toggleAll(firstStuff, true);
+  toggleAll(afterSubmittingStuff, false);
   totalImagesText.innerText = '' + numFiles;
   currentIndex = 0;
-  cancelButton.disabled = false;
-  finishButton.disabled = false;
   statusText.innerText = 'Waiting';
   await loadImage();
 
@@ -363,16 +373,14 @@ finishButton.addEventListener('click', async () => {
   if (currentIndex === numFiles - 1 || confirm('Are you sure you want to finish?')) {
     if (!getSettings()) return;
     finishing = true;
-    cancelButton.disabled = true;
-    finishButton.disabled = true;
+    toggleAll(afterSubmittingStuff, true);
+    cancelButton.disabled = false;
     while (currentIndex < numFiles - 1) {
       await processImage();
       ++currentIndex;
       if (settingsList[currentIndex]) loadSettings();
       await loadImage();
     }
-    previousImageButton.disabled = true;
-    nextImageButton.disabled = true;
     await processImage();
     statusText.innerText = 'Generating ZIP for maps';
   
@@ -410,8 +418,9 @@ finishButton.addEventListener('click', async () => {
 
     statusText.innerText = 'Generating data pack';
     const datapack = await generateDataPack(mapData);
-    downloadDataPackButton.href = URL.createObjectURL(datapack);
+    downloadDataPackButton.href = URL.createObjectURL(datapack.pack);
     downloadDataPackButton.download = 'maps_datapack.zip';
+    datapackId = datapack.id;
     statusText.innerText = 'Done!'
 
     for (let i = 0; i < mapData.length; ++i) {
@@ -427,7 +436,7 @@ finishButton.addEventListener('click', async () => {
 
 cancelButton.addEventListener('click', () => {
   if (confirm('Are you sure you want to cancel?')) {
-    reset();
+    window.location.reload();
   }
 })
 
@@ -442,16 +451,18 @@ opacityThresholdSetting.addEventListener('input', () => {
 })
 
 function generateItemFrameCommand() {
-  const glow = glowItemFrameCheckbox.checked ? 'glow_' : '';
-  const invis = invisibleItemFrameCheckbox.checked ? 'Invisible:1b,' : '';
   const mapInfo = mapData.find(x => x.startingIndex === parseInt(mapSelect.value))!;
-  const index = mapInfo.startingIndex;
-  const name = mapInfo.mapName;
-  const itemName = nameItemFrameCheckbox.checked ? `item_name="${name}",` : '';
-
-  itemFrameCommand.value = `/give @p ${glow}item_frame[${itemName}entity_data={id:${glow}item_frame,${invis}Air:${ITEM_FRAME_AIR_TAG}s,Tags:["${name}"],Item:{id:"filled_map",count:1,components:{"map_id":${index}}}}]`;
+  itemFrameCommand.value = commandGenerator.generateItemFrameCommand_1_20_5(
+    mapInfo, glowItemFrameCheckbox.checked, invisibleItemFrameCheckbox.checked, nameItemFrameCheckbox.checked)
   
   commandLengthWarning.style.display = itemFrameCommand.value.length > 256 ? 'block' : 'none';
+
+  if (mapInfo.frames > 1) {
+    cacheCommandStuff.style.display = 'block';
+    cacheCommand.innerText = commandGenerator.cacheCommand(datapackId, mapInfo.startingIndex);
+  } else {
+    cacheCommandStuff.style.display = 'none';
+  }
 }
 
 widthInput.addEventListener('change', drawCurrentImage);
@@ -465,10 +476,8 @@ mapSelect.addEventListener('change', generateItemFrameCommand);
 function reset() {
   afterSubmittingStuff.style.display = 'none';
 
-  previousImageButton.disabled = true;
-  nextImageButton.disabled = true;
-  finishButton.disabled = true;
-  cancelButton.disabled = true;
+  toggleAll(firstStuff, false);
+  toggleAll(afterSubmittingStuff, false);
 
   currentIndex = 0;
   numFiles = 0;
