@@ -1,4 +1,9 @@
+import './style.scss';
+import * as bootstrap from 'bootstrap'
 import { Buffer } from "buffer";
+import initializeTooltips from './tooltips';
+
+
 globalThis.Buffer = Buffer;
 import JSZip from "jszip";
 import { parseGIF, decompressFrames } from "gifuct-js";
@@ -8,40 +13,58 @@ import { colorToString, findIndexOfNearestColor, getPixelOnCanvas, gzip, isValid
 import { TAG, NbtWriter } from "node-nbt";
 import { generateDataPack, ITEM_FRAME_AIR_TAG, type mapInfo } from "./datapack";
 
-const opacityThreshold = 0;
 
-const imageInput = document.getElementById('imageInput') as HTMLInputElement;
-const versionSelect = document.getElementById('versionSelect') as HTMLSelectElement;
-const mapNameInput = document.getElementById('mapNameInput') as HTMLInputElement;
-const submitButton = document.getElementById('submitButton') as HTMLButtonElement;
-const mapIndexInput = document.getElementById('mapIndexInput') as HTMLInputElement;
-const incrementIndexCheckbox = document.getElementById('incrementIndexCheckbox') as HTMLInputElement;
-const currentIndexText = document.getElementById('currentIndexText') as HTMLElement;
-const totalImagesText = document.getElementById('totalImagesText') as HTMLElement;
-const previousImageButton = document.getElementById('previousImageButton') as HTMLButtonElement;
-const nextImageButton = document.getElementById('nextImageButton') as HTMLButtonElement;
-const finishButton = document.getElementById('finishButton') as HTMLButtonElement;
-const cancelButton = document.getElementById('cancelButton') as HTMLButtonElement;
-const currentImage = document.getElementById('currentImage') as HTMLCanvasElement;
-const previewImage = document.getElementById('previewImage') as HTMLCanvasElement;
-const preview_ctx = previewImage.getContext('2d')!
-const resultsSection = document.getElementById('resultsSection') as HTMLDivElement;
-const downloadButton = document.getElementById('downloadButton') as HTMLAnchorElement;
-const downloadDataPackButton = document.getElementById('downloadDataPackButton') as HTMLAnchorElement;
-const newMapButton = document.getElementById('newMapButton') as HTMLButtonElement;
-const widthInput = document.getElementById('widthInput') as HTMLInputElement;
-const heightInput = document.getElementById('heightInput') as HTMLInputElement;
-const fitSetting = document.getElementById('fitSetting') as HTMLSelectElement;
-const ticksPerFrameSetting = document.getElementById('ticksPerFrameSetting') as HTMLSelectElement; 
-const autoSizeCheckbox = document.getElementById('autoSizeCheckbox') as HTMLInputElement;
-const itemFrameCommand = document.getElementById('itemFrameCommand') as HTMLTextAreaElement;
-const mapSelect = document.getElementById('mapSelect') as HTMLSelectElement;
-const glowItemFrameCheckbox = document.getElementById('glowItemFrameCheckbox') as HTMLInputElement;
-const invisibleItemFrameCheckbox = document.getElementById('invisibleItemFrameCheckbox') as HTMLInputElement;
-const nameItemFrameCheckbox = document.getElementById('nameItemFrameCheckbox') as HTMLInputElement;
-const commandLengthWarning = document.getElementById('commandLengthWarning') as HTMLParagraphElement;
+initializeTooltips();
+
+function e<T extends HTMLElement>(id: string) {
+  return document.getElementById(id) as T;
+}
+
+type HElem = HTMLElement;
+type HButton = HTMLButtonElement;
+type HInput = HTMLInputElement;
+type HSelect = HTMLSelectElement;
+type HCanvas = HTMLCanvasElement;
+type HAnchor = HTMLAnchorElement;
+type HDiv = HTMLDivElement;
+type HTextArea = HTMLTextAreaElement;
+
+const imageInput = e<HInput>('imageInput');
+const versionSelect = e<HSelect>('versionSelect');
+const mapNameInput = e<HInput>('mapNameInput');
+const submitButton = e<HButton>('submitButton')
+const mapIndexInput = e<HInput>('mapIndexInput');
+const incrementIndexCheckbox = e<HInput>('incrementIndexCheckbox');
+const currentIndexText = e<HElem>('currentIndexText');
+const statusText = e<HElem>('statusText');
+const totalImagesText = e<HElem>('totalImagesText');
+const previousImageButton = e<HButton>('previousImageButton');
+const nextImageButton = e<HButton>('nextImageButton');
+const finishButton = e<HButton>('finishButton');
+const cancelButton = e<HButton>('cancelButton');
+const currentImage = e<HCanvas>('currentImage');
+const previewImage = e<HCanvas>('previewImage');
+const resultsSection = e<HDiv>('resultsSection');
+const downloadButton = e<HAnchor>('downloadButton');
+const downloadDataPackButton = e<HAnchor>('downloadDataPackButton');
+const newMapButton = e<HButton>('newMapButton');
+const widthInput = e<HInput>('widthInput');
+const heightInput = e<HInput>('heightInput');
+const fitSetting = e<HSelect>('fitSetting');
+const ticksPerFrameSetting = e<HSelect>('ticksPerFrameSetting');
+const autoSizeCheckbox = e<HInput>('autoSizeCheckbox');
+const itemFrameCommand = e<HTextArea>('itemFrameCommand');
+const mapSelect = e<HSelect>('mapSelect');
+const glowItemFrameCheckbox = e<HInput>('glowItemFrameCheckbox');
+const invisibleItemFrameCheckbox = e<HInput>('invisibleItemFrameCheckbox');
+const nameItemFrameCheckbox = e<HInput>('nameItemFrameCheckbox');
+const commandLengthWarning = e<HElem>('commandLengthWarning');
+const opacityThresholdSetting = e<HInput>('opacityThresholdSetting');
+const opacityValue = e<HElem>('opacityValue');
+const afterSubmittingStuff = e<HDiv>('afterSubmittingStuff');
 
 const ctx = currentImage.getContext('2d', { willReadFrequently: true })!;
+const preview_ctx = previewImage.getContext('2d')!;
 
 interface settings {
   fit: string,
@@ -136,7 +159,7 @@ async function drawImage(url: string, name: string, frame: number, canvas? : HTM
     heightInput.value = '' + Math.ceil(img.height / MC_MAP_SIZE);
   }
 
-  if (!getSettings()) return;
+  if (!getSettings()) return false;
   const s = settingsList[currentIndex];
   mapData[currentIndex] = {
     mapName: s.mapName,
@@ -177,7 +200,7 @@ async function mapFromImageData(imgData: ImageData) {
   for (let x = 0; x < MC_MAP_SIZE; ++x) {
     for (let y = 0; y < MC_MAP_SIZE; ++y) {
       const pixel = getPixelOnCanvas(x, y, imgData);
-      if (pixel[1] > opacityThreshold) {
+      if (pixel[1] >= parseInt(opacityThresholdSetting.value)) {
         const indexOfNearestColor = findIndexOfNearestColor(pixel[0], colorTable);
         nbtValues[y * MC_MAP_SIZE + x] = indexOfNearestColor + 4;
         const nearestColor = colorToString(colorTable[indexOfNearestColor]);
@@ -242,9 +265,12 @@ async function mapFromImageData(imgData: ImageData) {
 async function processImage() {
   const s = settingsList[currentIndex];
   const image = imageInput.files![currentIndex];
+  let currentMapsDone = 0;
   if (image.type === 'image/gif') {
     const gif = parseGIF(await image.arrayBuffer());
     const frames = decompressFrames(gif, true);
+    const totalMaps = frames.length * s.mapsHeight * s.mapsWidth;
+    statusText.innerText = `0 of ${totalMaps} maps processed (0%)`;
     const auxillaryCanvas = document.createElement('canvas');
     const auxillary_ctx = auxillaryCanvas.getContext('2d')!;
     auxillaryCanvas.width = gif.lsd.width;
@@ -265,20 +291,26 @@ async function processImage() {
         for (let j = 0; j < s.mapsWidth; ++j) {
           const imgData = ctx.getImageData(j * MC_MAP_SIZE, i * MC_MAP_SIZE, MC_MAP_SIZE, MC_MAP_SIZE);
           await mapFromImageData(imgData);
+          currentMapsDone++;
+          statusText.innerText = `${currentMapsDone} of ${totalMaps} maps processed (${Math.floor(currentMapsDone / totalMaps * 100)}%)`;
         }
       }
     }
-   } else {
+  } else {
+    const totalMaps = s.mapsHeight * s.mapsWidth;
     for (let i = 0; i < s.mapsHeight; ++i) {
       for (let j = 0; j < s.mapsWidth; ++j) {
         const imgData = ctx.getImageData(j * MC_MAP_SIZE, i * MC_MAP_SIZE, MC_MAP_SIZE, MC_MAP_SIZE);
         await mapFromImageData(imgData);
+        currentMapsDone++;
+        statusText.innerText = `${currentMapsDone} of ${totalMaps} maps processed (${Math.floor(currentMapsDone / totalMaps * 100)}%)`;
       }
     }
   }
 }
 
 async function loadImage() {
+  opacityValue.innerText = opacityThresholdSetting.value;
   previousImageButton.disabled = (finishing || currentIndex === 0);
   nextImageButton.disabled = (finishing || currentIndex === numFiles - 1);
   currentIndexText.innerText = '' + (currentIndex + 1);
@@ -289,17 +321,22 @@ async function loadImage() {
 
 submitButton.addEventListener('click', async () => {
 
+  numFiles = imageInput.files!.length;
+  if (numFiles == 0) return alert('You need to add some files first bro');
+
+  afterSubmittingStuff.style.display = 'block';
+
   maps_zip = new JSZip();
 
   mapIndex = parseInt(mapIndexInput.value) || 0;
 
-  numFiles = imageInput.files!.length;
-  if (numFiles == 0) return alert('You need to add some files first bro');
+  
   imageInput.disabled = true;
   totalImagesText.innerText = '' + numFiles;
   currentIndex = 0;
   cancelButton.disabled = false;
   finishButton.disabled = false;
+  statusText.innerText = 'Waiting';
   await loadImage();
 
 })
@@ -311,14 +348,20 @@ previousImageButton.addEventListener('click', async () => {
 })
 
 nextImageButton.addEventListener('click', async () => {
+  if (!getSettings()) return;
+  const nextImageButtonDisabled = nextImageButton.disabled;
+  nextImageButton.disabled = true;
   await processImage();
   ++currentIndex;
+  nextImageButton.disabled = nextImageButtonDisabled;
+  statusText.innerText = 'Waiting';
   if (settingsList[currentIndex]) loadSettings();
   await loadImage();
 })
 
 finishButton.addEventListener('click', async () => {
   if (currentIndex === numFiles - 1 || confirm('Are you sure you want to finish?')) {
+    if (!getSettings()) return;
     finishing = true;
     cancelButton.disabled = true;
     finishButton.disabled = true;
@@ -331,6 +374,7 @@ finishButton.addEventListener('click', async () => {
     previousImageButton.disabled = true;
     nextImageButton.disabled = true;
     await processImage();
+    statusText.innerText = 'Generating ZIP for maps';
   
     const lastIdFile = await gzip(NbtWriter.writeTag({
       name: '',
@@ -364,9 +408,12 @@ finishButton.addEventListener('click', async () => {
       mapIndexInput.value = '' + mapIndex;
     }
 
+    statusText.innerText = 'Generating data pack';
     const datapack = await generateDataPack(mapData);
     downloadDataPackButton.href = URL.createObjectURL(datapack);
     downloadDataPackButton.download = 'maps_datapack.zip';
+    statusText.innerText = 'Done!'
+
     for (let i = 0; i < mapData.length; ++i) {
       const option = document.createElement('option');
       option.value = '' + mapData[i].startingIndex;
@@ -390,10 +437,14 @@ newMapButton.addEventListener('click', () => {
   }
 })
 
+opacityThresholdSetting.addEventListener('input', () => {
+  opacityValue.innerText = opacityThresholdSetting.value;
+})
+
 function generateItemFrameCommand() {
   const glow = glowItemFrameCheckbox.checked ? 'glow_' : '';
   const invis = invisibleItemFrameCheckbox.checked ? 'Invisible:1b,' : '';
-  const mapInfo = mapData[parseInt(mapSelect.value)];
+  const mapInfo = mapData.find(x => x.startingIndex === parseInt(mapSelect.value))!;
   const index = mapInfo.startingIndex;
   const name = mapInfo.mapName;
   const itemName = nameItemFrameCheckbox.checked ? `item_name="${name}",` : '';
@@ -412,17 +463,22 @@ nameItemFrameCheckbox.addEventListener('change', generateItemFrameCommand);
 mapSelect.addEventListener('change', generateItemFrameCommand);
 
 function reset() {
+  afterSubmittingStuff.style.display = 'none';
+
   previousImageButton.disabled = true;
   nextImageButton.disabled = true;
   finishButton.disabled = true;
   cancelButton.disabled = true;
+
   currentIndex = 0;
   numFiles = 0;
   currentIndexText.innerText = '0';
   totalImagesText.innerText = '0';
   ctx.clearRect(0, 0, currentImage.width, currentImage.height);
   preview_ctx.clearRect(0, 0, previewImage.width, previewImage.height);
+
   resultsSection.style.display = 'none';
+
   imageInput.value = '';
   imageInput.disabled = false;
   finishing = false;
@@ -430,6 +486,8 @@ function reset() {
   mapData = [];
   currentImage.width = MC_MAP_SIZE;
   currentImage.height = MC_MAP_SIZE;
+  mapSelect.replaceChildren();
+  statusText.innerText = '';
 }
 
 reset();

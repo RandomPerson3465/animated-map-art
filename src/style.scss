@@ -1,0 +1,48 @@
+@import "bootstrap/scss/bootstrap";
+$bootstrap-icons-font-dir: "bootstrap-icons/font/fonts";
+@import "bootstrap-icons/font/bootstrap-icons";
+
+body {
+  margin: 8px !important;
+}
+
+.after-submitting-stuff {
+  display: none;
+}
+
+.xs-width {
+  width: 50px;
+}
+
+.s-width {
+  width: 100px;
+}
+
+.ms-width {
+  width: 150px;
+}
+
+.m-width {
+  width: 200px;
+}
+
+.l-width {
+  width: 300px;
+}
+
+.xl-width {
+  width: 400px;
+}
+
+.xxl-width {
+  width: 500px;
+}
+
+.settings-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.settings-container div {
+  margin-right: 8px;
+}

@@ -1,64 +1,112 @@
 <!doctype html>
-<html lang="en">
-  <head><title>Minecraft Animated Map Art Generator</title></head>
+<html lang="en" data-bs-theme="dark">
+  <head>
+    <title>Minecraft Animated Map Art Generator</title>
+  </head>
   <body>
-    <label>Insert file(s)</label>
-    <input id="imageInput" type="file" accept="image/png image/jpeg image/gif" multiple><br>
+    <h1>Minecraft Animated Map Art Generator</h1>
 
-    <label>Select version:</label><select id="versionSelect">
-      <option value="4786" selected>Java 26.1+</option>
-    </select><br>
-
-    <button id="submitButton">Submit</button><br>
-
-    <label>Starting index:</label> <input type="number" min="0" value="0" id="mapIndexInput"><br>
-
-    <label>Auto increment index:</label> <input type="checkbox" id="incrementIndexCheckbox" checked><br>
-
-    <p>Current image: <span id="currentIndexText">0</span> of <span id="totalImagesText">0</span> (Map ID: <span id="currentMapIndexText"></span>)</p>
-
-    <span>
-      <button id="previousImageButton">Previous image</button>
-      <button id="nextImageButton">Next image</button>
-      <button id="finishButton">Finish</button>
-      <button id="cancelButton">Cancel</button>
-    </span>
-
-    <div id="mapSettings">
-      <label>Name (must be unique per world): </label> <input type="text" id="mapNameInput" value="map"><br>
-      <span><label>Size: </label><input type="number" value="1" id="widthInput" min="1"> by <input type="number" value="1" id="heightInput" min="1"> maps</span><br>
-
-      <label>Auto size: </label><input type="checkbox" id="autoSizeCheckbox" checked><br>
-
-      <label>Fit: </label><select id="fitSetting">
-        <option value="resize">Resize to fit</option>
-        <option value="center">Center</option>
-        <option value="topLeft">Top left</option>
-        <option value="topRight">Top right</option>
-        <option value="bottomLeft">Bottom left</option>
-        <option value="bottomRight">Bottom right</option>
-      </select><br>
-
-      <label>Frame rate: </label><select id="ticksPerFrameSetting">
-        <option value="1">20</option>
-        <option value="2">10</option>
-        <option value="3">6.67</option>
-        <option value="4">5</option>
-        <option value="5">4</option>
-        <option value="6">3.33</option>
-        <option value="8">2.5</option>
-        <option value="10">2</option>
-        <option value="12">1.67</option>
-        <option value="15">1.33</option>
-        <option value="20">1</option>
-      </select>
+    <div class="alert alert-danger">
+      <strong>EPILEPSY WARNING! </strong> Animated maps may flicker when initially loaded. This is fixed with the "caching" command for the datapack that you can copy once it has been generated. Please be mindful of others when using this tool.
     </div>
 
-    <p>Original</p>
-    <canvas id="currentImage" width="128" height="128"></canvas><br>
+    <div class="alert alert-warning">
+      <strong>WARNING:</strong> Large maps may cause your Minecraft to lag or crash. Please be reasonable when using this tool.
+    </div>
 
-    <p>Preview</p>
-    <canvas id="previewImage" width="128" height="128"></canvas><br>
+    <div class="mb-3 mt-3">
+      <label for="imageInput" class="form-label">Insert file(s)</label>
+      <input id="imageInput" class="form-control" type="file" accept="image/png image/jpeg image/gif" multiple>
+    </div>
+
+    <div class="settings-container">
+      <div class="mb-3 mt-3">
+        <label for="versionSelect" class="form-label">Select version:</label><select id="versionSelect" class="form-select l-width">
+          <option value="4786" selected>Java 26.1+</option>
+          <option value="3953">Java 1.21-1.21.11</option>
+          <option value="3837">Java 1.20.5-1.20.6</option>
+        </select>
+      </div>
+      <div class="mb-3 mt-3">
+        <label for="mapIndexInput" class="form-label">Starting index: <i class="bi bi-info-circle-fill" data-bs-toggle="tooltip" title="The first number that isn't already used in your .minecraft/data/maps folder. This will be the ID of the first map."></i></label><input type="number" min="0" value="0" id="mapIndexInput" class="form-control m-width">
+      </div>
+      <div class="mb-3 mt-3">
+        <label for="incrementIndexCheckbox" class="form-label">Auto increment index:</label> <input type="checkbox" id="incrementIndexCheckbox" class="form-check-input" checked>
+      </div>
+    </div>
+
+    <button id="submitButton" class="btn btn-primary">Submit</button><br>
+
+    <div id="afterSubmittingStuff" class="after-submitting-stuff">
+      <p>Current image: <span id="currentIndexText">0</span> of <span id="totalImagesText">0</span></p>
+      <p>Status: <span id="statusText"></span></p>
+
+      <span>
+        <button id="previousImageButton" class="btn btn-secondary">Previous image</button>
+        <button id="nextImageButton" class="btn btn-secondary">Next image</button>
+        <button id="finishButton" class="btn btn-primary">Finish</button>
+        <button id="cancelButton" class="btn btn-danger">Cancel</button>
+      </span>
+
+      <div id="mapSettings">
+        <div class="mb-3 mt-3">
+          <label class="form-label" for="mapNameInput">Name (must be unique per world): </label> <input type="text" id="mapNameInput" value="map" class="form-control xl-width">
+        </div>
+        <div class="settings-container">
+          <div class="settings-container">
+            <div class="mb-3 mt-3">
+              <label class="form-label" for="widthInput">Width:</label><input type="number" value="1" id="widthInput" min="1" class="form-control s-width"> maps
+            </div>
+            <div class="mb-3 mt-3">
+              <label class="form-label" for="heightInput">Height:</label><input type="number" value="1" id="heightInput" min="1" class="form-control s-width"> maps
+            </div>
+            <div class="mb-3 mt-3">
+              <label class="form-label" for="autoSizeCheckbox">Auto size:</label> <input type="checkbox" id="autoSizeCheckbox" class="form-check-input" checked>
+            </div>
+          </div>
+          <div class="settings-container">
+            <div class="mb-3 mt-3">
+              <label class="form-label" for="fitSetting">Fit: </label>
+              <select id="fitSetting" class="form-select">
+                <option value="resize">Resize to fit</option>
+                <option value="center">Center</option>
+                <option value="topLeft">Top left</option>
+                <option value="topRight">Top right</option>
+                <option value="bottomLeft">Bottom left</option>
+                <option value="bottomRight">Bottom right</option>
+              </select>
+            </div>
+            <div class="mb-3 mt-3">
+              <label class="form-label" for="ticksPerFrameSetting">Frame rate: </label>
+              <select id="ticksPerFrameSetting" class="form-select">
+                <option value="1">20</option>
+                <option value="2">10</option>
+                <option value="3">6.67</option>
+                <option value="4">5</option>
+                <option value="5">4</option>
+                <option value="6">3.33</option>
+                <option value="8">2.5</option>
+                <option value="10">2</option>
+                <option value="12">1.67</option>
+                <option value="15">1.33</option>
+                <option value="20">1</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="mb-3 mt-3">
+          <label class="form-label" for="opacityThresholdSetting">Opacity threshold (0-255):</label><br>
+          <input type="range" id="opacityThresholdSetting" class="form-range xxl-width" min="0" max="255" step="1">
+          <span id="opacityValue">0</span>
+        </div>
+      </div>
+
+      <p>Current frame:</p>
+      <canvas id="currentImage" width="128" height="128"></canvas><br>
+
+      <p>Current map preview:</p>
+      <canvas id="previewImage" width="128" height="128"></canvas><br>
+    </div>
 
     <div id="resultsSection">
       <a id="downloadButton" href="">Download final map</a><br>
@@ -74,6 +122,5 @@
     </div>
 
   </body>
-
   <script type="module" src="/src/main.ts"></script>
 </html>
