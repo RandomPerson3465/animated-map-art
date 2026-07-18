@@ -88,10 +88,19 @@
                 <option value="4">5</option>
                 <option value="5">4</option>
                 <option value="6">3.33</option>
+                <option value="7">2.86</option>
                 <option value="8">2.5</option>
+                <option value="9">2.22</option>
                 <option value="10">2</option>
+                <option value="11">1.82</option>
                 <option value="12">1.67</option>
+                <option value="13">1.54</option>
+                <option value="14">1.43</option>
                 <option value="15">1.33</option>
+                <option value="16">1.25</option>
+                <option value="17">1.18</option>
+                <option value="18">1.11</option>
+                <option value="19">1.05</option>
                 <option value="20">1</option>
               </select>
             </div>
@@ -106,9 +115,6 @@
 
       <p>Current frame:</p>
       <canvas id="currentImage" width="128" height="128"></canvas><br>
-
-      <p>Current map preview:</p>
-      <canvas id="previewImage" width="128" height="128"></canvas><br>
     </div>
 
     <div id="resultsSection">
@@ -140,8 +146,133 @@
         <p class="text-warning"><i class="bi bi-exclamation-triangle"></i><strong>WARNING: </strong> You will lose the item in your offhand slot after running this command.</p>
         <button id="copyCacheCommand" class="btn btn-secondary" copy="cacheCommand"><i class="bi bi-copy"></i> Copy caching command</button>
       </div>
+      <div class="mb-3 mt-3">
+        <label for="cleanCommand">Cleanup command:</label>
+        <textarea id="cleanCommand" class="form-control"></textarea>
+        <p>Use this command before disabling or removing the datapack to clean up all the scoreboard objectives.</p>
+        <button id="copyCleanCommand" class="btn btn-secondary" copy="cleanCommand"><i class="bi bi-copy"></i> Copy cleanup command</button>
+      </div>
       
       <button id="newMapButton" class="btn btn-secondary"><i class="bi bi-arrow-repeat"></i> Go again</button>
+    </div>
+
+    <div>
+      <hr>
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q1">How do I find what starting index to use?</a>
+        </div>
+        <div id="q1" class="collapse">
+          <div class="card-body">
+            <p>Open the world folder for your world. You can open it using the world select menu: Select your world, click "Edit" at the bottom, and then click "Open World Folder."</p>
+            <p>In <strong>26.1 and above</strong>, your maps are in the <code>data/minecraft/maps</code> folder. If there are no files named with numbers, use 0 as your starting index, otherwise add 1 to the biggest numbered file and use that as your starting index.</p>
+            <p>In <strong>1.21.11 and below</strong>, the maps go directly in the <code>data</code> folder. If there are no files starting with "<code>map_</code>" use 0 as your starting index. Otherwise, add 1 to the biggest numbered file prefixed with "<code>map_</code>" and use that as your starting index.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q2">Where do I extract the map files?</a>
+        </div>
+        <div id="q2" class="collapse">
+          <div class="card-body">
+            <p>You will need access to the world files. <strong class="text-warning">Before doing anything, make sure you exit the world (or shut off the server if you're playing on a server) to make sure everything saves properly.</strong></p>
+            <p>Find the folder in which your maps are stored in as shown above. Then, extract the map files into this folder. <strong class="text-warning">Make sure you replace <code>last_id.dat</code> (26.1+) or <code>idcounts.dat</code> (1.21.11 and below)!</strong> You can re-enter your world once you're done.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q3">Where do I put the datapack and how do I enable it?</a>
+        </div>
+        <div id="q3" class="collapse">
+          <div class="card-body">
+            <p>The datapack goes into the <code>datapacks</code> folder in your world folder. You can be in the world while you do this. <strong class="text-warning">You do NOT need to extract the zip file.</strong></p>
+            <p>After that, run the command <code>/datapack list</code> and then use <code>/datapack enable</code> on your datapack file to enable it (if you ran <code>/datapack list</code> the file should appear as an autocomplete suggestion).</p>
+          </div>
+        </div>
+      </div>   
+      
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q4">Why is the animated map flickering and how do I fix it?</a>
+        </div>
+        <div id="q4" class="collapse">
+          <div class="card-body">
+            <p>It does this because the game reads the map data from disk whenever the maps change, which is very slow. Eventually it gets better if the game decides to cache the map data so it doesn't have to read from disk every time.</p>
+            <p>You can stop the flickering by forcing the game to cache all the maps by running the cache command, which cycles through the maps using your offhand slot at around 20 maps per second. <strong class="text-warning">Note that if you have an item in your offhand when you run this command you will lose it!</strong> If there are a lot of maps or frames you can speed this process up in 1.20.3+ using the command <code>/tick rate 1000</code> (note that this will speed up the rest of your game as well). Use <code>/tick rate 20</code> to restore the default tick rate.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q5">Why are animated map arts so loud?</a>
+        </div>
+        <div id="q5" class="collapse">
+          <div class="card-body">
+            <p>The reason is that item frames always play a popping sound whenever the item inside changes. To turn this off, go to your game options, select Music & Sounds, and slide Friendly Creatures all the way to OFF.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q6">How do I get the commands back for another datapack that I generated using this tool?</a>
+        </div>
+        <div id="q6" class="collapse">
+          <div class="card-body">
+            <p>TBA</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q7">How do I consolidate datapacks that I generated using this tool?</a>
+        </div>
+        <div id="q7" class="collapse">
+          <div class="card-body">
+            <p>TBA</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q8">I want to delete a datapack generated by this tool. How do I clean up the mess of scoreboard objectives created by it?</a>
+        </div>
+        <div id="q8" class="collapse">
+          <div class="card-body">
+            <p>Copy and run the clean command. This will delete all scoreboard objectives created by the datapack. Then, use <code>/datapack disable</code> to disable the datapack and remove the datapack from your <code>datapacks</code> folder.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q9">Does this work on survival worlds?</a>
+        </div>
+        <div id="q9" class="collapse">
+          <div class="card-body">
+            <p>Running the commands used to obtain the item frames and map items, enable the datapack, etc. requires cheats or operator permissions in vanilla Minecraft. If you want to temporarily enable cheats to run the commands to set things up, press "Open to LAN", set "Allow Commands" to ON, and start the LAN world.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q10">Is this tool safe for privacy?</a>
+        </div>
+        <div id="q10" class="collapse">
+          <div class="card-body">
+            <p>This tool runs 100% in your browser, we do NOT upload your files to any server nor collect any data.</p>
+          </div>
+        </div>
+      </div>
+
     </div>
 
   </body>

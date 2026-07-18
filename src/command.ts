@@ -1,4 +1,4 @@
-import { type mapInfo, ITEM_FRAME_AIR_TAG } from "./datapack";
+import { type mapInfo, ITEM_FRAME_AIR_TAG, PREFIX } from "./datapack";
 
 export function generateItemFrameCommand_1_20_5(mapInfo: mapInfo, glowItemFrame: boolean, invisItemFrame: boolean, nameItemFrame: boolean) {
     const glow = glowItemFrame ? 'glow_' : '';
@@ -11,4 +11,8 @@ export function generateItemFrameCommand_1_20_5(mapInfo: mapInfo, glowItemFrame:
 
 export function cacheCommand(id: string, index: number) {
     return `/scoreboard players set @p c_${id} ${index}`;
+}
+
+export function cleanCommand(id: string) {
+    return `/function ${PREFIX}${id}:clean`;
 }
