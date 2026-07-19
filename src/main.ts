@@ -3,15 +3,15 @@ import * as bootstrap from 'bootstrap'
 import { Buffer } from "buffer";
 import initializeTooltips from './tooltips';
 import initializeCopyButtons from './copyButtons'
-import * as commandGenerator from './command'
-
+import * as commandGenerator from './commands'
+import * as versions from './mc_versions';
 
 globalThis.Buffer = Buffer;
 import JSZip from "jszip";
 import { parseGIF, decompressFrames } from "gifuct-js";
 
 import { colorTable } from "./color_table";
-import { colorToString, findIndexOfNearestColor, getPixelOnCanvas, gzip, isValidTag, MC_MAP_SIZE, toggleAll } from "./util";
+import { findIndexOfNearestColor, getPixelOnCanvas, gzip, isValidTag, MC_MAP_SIZE, toggleAll } from "./util";
 import { TAG, NbtWriter } from "node-nbt";
 import { generateDataPack, type mapInfo } from "./datapack";
 
@@ -131,6 +131,7 @@ let numFiles = 0;
 let maps_zip: JSZip;
 let finishing = false;
 let datapackId = '';
+let version = parseInt(versionSelect.value);
 
 function autoName(fileName: string) {
     const dotPos = fileName.lastIndexOf('.');
@@ -265,7 +266,8 @@ async function mapFromImageData(imgData: ImageData) {
         ]
     }
     const nbtData = NbtWriter.writeTag(mapNBT);
-    maps_zip.file((mapIndex++) + '.dat', await gzip(nbtData));
+    const prefix = version >= versions.MC_26_1 ? '' : 'map_';
+    maps_zip.file(prefix + (mapIndex++) + '.dat', await gzip(nbtData));
 }
 
 async function processImage() {
@@ -335,6 +337,7 @@ submitButton.addEventListener('click', async () => {
     maps_zip = new JSZip();
 
     mapIndex = parseInt(mapIndexInput.value) || 0;
+    version = parseInt(versionSelect.value);
 
     toggleAll(firstStuff, true);
     toggleAll(afterSubmittingStuff, false);
@@ -396,12 +399,12 @@ finishButton.addEventListener('click', async () => {
                 {
                     name: 'DataVersion',
                     type: TAG.INT,
-                    val: parseInt(versionSelect.value)
+                    val: version
                 }
             ]
         }))
 
-        maps_zip.file('last_id.dat', lastIdFile);
+        maps_zip.file(version >= versions.MC_26_1 ? 'last_id.dat' : 'idcounts.dat', lastIdFile);
         const file = await maps_zip.generateAsync({ type: 'blob' });
         downloadButton.href = URL.createObjectURL(file);
         downloadButton.download = 'maps.zip';
@@ -411,7 +414,7 @@ finishButton.addEventListener('click', async () => {
         }
 
         statusText.innerText = 'Generating data pack';
-        const datapack = await generateDataPack(mapData);
+        const datapack = await generateDataPack(mapData, version);
         downloadDataPackButton.href = URL.createObjectURL(datapack.pack);
         downloadDataPackButton.download = 'maps_datapack.zip';
         datapackId = datapack.id;
