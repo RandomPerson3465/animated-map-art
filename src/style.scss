@@ -46,3 +46,27 @@ body {
 .settings-container div {
   margin-right: 8px;
 }
+
+.top-icons {
+    -moz-user-select: -moz-none;
+    -khtml-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    right: 0;
+    font-size: 5vh;
+    position: absolute;
+    z-index: 1;
+}
+
+.top-icons a {
+    color: inherit;
+}
+
+.top-icons i {
+    cursor: pointer;
+}
+
+#commandsSection, #combineSection, #resultsSection {
+    display: none;
+}

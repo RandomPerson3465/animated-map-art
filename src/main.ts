@@ -1,10 +1,13 @@
 import './style.scss';
-import * as bootstrap from 'bootstrap'
+import * as bootstrap from 'bootstrap';
+void bootstrap;
 import { Buffer } from "buffer";
 import initializeTooltips from './tooltips';
 import initializeCopyButtons from './copyButtons'
 import * as commandGenerator from './commands'
 import * as versions from './mc_versions';
+import { e, type HAnchor, type HButton, type HCanvas, type HDiv, 
+    type HElem, type HInput, type HSelect, type HTextArea } from './aliases';
 
 globalThis.Buffer = Buffer;
 import JSZip from "jszip";
@@ -13,23 +16,10 @@ import { parseGIF, decompressFrames } from "gifuct-js";
 import { colorTable } from "./color_table";
 import { findIndexOfNearestColor, getPixelOnCanvas, gzip, isValidTag, MC_MAP_SIZE, toggleAll } from "./util";
 import { TAG, NbtWriter } from "node-nbt";
-import { generateDataPack, type mapInfo } from "./datapack";
+import { generateDataPack, type MapInfo } from "./datapack";
 
 initializeCopyButtons();
 initializeTooltips();
-
-function e<T extends HTMLElement>(id: string) {
-    return document.getElementById(id) as T;
-}
-
-type HElem = HTMLElement;
-type HButton = HTMLButtonElement;
-type HInput = HTMLInputElement;
-type HSelect = HTMLSelectElement;
-type HCanvas = HTMLCanvasElement;
-type HAnchor = HTMLAnchorElement;
-type HDiv = HTMLDivElement;
-type HTextArea = HTMLTextAreaElement;
 
 const imageInput = e<HInput>('imageInput');
 const versionSelect = e<HSelect>('versionSelect');
@@ -48,7 +38,7 @@ const currentImage = e<HCanvas>('currentImage');
 const resultsSection = e<HDiv>('resultsSection');
 const downloadButton = e<HAnchor>('downloadButton');
 const downloadDataPackButton = e<HAnchor>('downloadDataPackButton');
-const newMapButton = e<HButton>('newMapButton');
+const goAgainButton = e<HButton>('goAgainButton');
 const widthInput = e<HInput>('widthInput');
 const heightInput = e<HInput>('heightInput');
 const fitSetting = e<HSelect>('fitSetting');
@@ -79,7 +69,7 @@ interface settings {
 }
 
 let settingsList: settings[] = [];
-let mapData: mapInfo[] = [];
+let mapData: MapInfo[] = [];
 
 function getSettings() {
     const w = parseInt(widthInput.value);
@@ -434,6 +424,7 @@ finishButton.addEventListener('click', async () => {
             mapSelect.appendChild(option);
         }
 
+        cancelButton.disabled = true;
         cleanCommand.value = commandGenerator.cleanCommand(datapackId);
         generateItemFrameCommand();
         resultsSection.style.display = 'block';
@@ -446,7 +437,7 @@ cancelButton.addEventListener('click', () => {
     }
 })
 
-newMapButton.addEventListener('click', () => {
+goAgainButton.addEventListener('click', () => {
     if (confirm("Are you sure you want to go again? Your downloads will be lost if you haven't downloaded them already.")) {
         reset();
     }

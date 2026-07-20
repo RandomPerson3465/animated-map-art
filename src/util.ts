@@ -43,7 +43,7 @@ export async function gzip(data: string) : Promise<Blob> {
 }
 
 export function isValidTag(str: string) {
-    return str.match(/[^0-9|A-Z|a-z|\_\-\.]/) === null && !str.endsWith('.');
+    return str.length > 0 && str.match(/[^0-9|A-Z|a-z|\_\-\.]/) === null && !str.endsWith('.');
 }
 
 export function idGen(length: number) {

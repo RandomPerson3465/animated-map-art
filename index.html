@@ -1,9 +1,14 @@
 <!doctype html>
-<html lang="en" data-bs-theme="dark">
+<html lang="en">
   <head>
     <title>Minecraft Animated Map Art Generator</title>
+    <meta name="description" content="Minecraft Animated Map Art Generator - Convert gif, png, and jpg to Minecraft maps">
   </head>
   <body>
+    <div class="top-icons">
+        <a href="/"><i class="bi bi-house-fill"></i></a>
+        <a class="document-theme-changer"><i class="bi bi-moon" onclick="setDarkTheme();"></i></a>
+    </div>
     <h1>Minecraft Animated Map Art Generator</h1>
 
     <p>Convert gifs to animated Minecraft map arts. Also supports converting .jpg and .png still images.</p>
@@ -47,10 +52,10 @@
       <p>Status: <span id="statusText"></span></p>
 
       <span>
-        <button id="previousImageButton" class="btn btn-secondary">Previous image</button>
-        <button id="nextImageButton" class="btn btn-secondary">Next image</button>
-        <button id="finishButton" class="btn btn-primary">Finish</button>
-        <button id="cancelButton" class="btn btn-danger">Cancel</button>
+        <button id="previousImageButton" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Previous image</button>
+        <button id="nextImageButton" class="btn btn-secondary"><i class="bi bi-arrow-right"></i> Next image</button>
+        <button id="finishButton" class="btn btn-primary"><i class="bi bi-fast-forward-circle"></i> Finish</button>
+        <button id="cancelButton" class="btn btn-danger"><i class="bi bi-x-octagon"></i> Cancel</button>
       </span>
 
       <div id="mapSettings">
@@ -142,7 +147,7 @@
         <button id="copyCommand" class="btn btn-secondary" copy="itemFrameCommand"><i class="bi bi-copy"></i> Copy command</button><br>
       </div>
       <div id="cacheCommandStuff" class="mb-3 mt-3">
-        <label for="cacheCommand">Cache command:</label>
+        <label for="cacheCommand">Caching command:</label>
         <textarea id="cacheCommand" class="form-control"></textarea>
         <p>This command stops the animated map art from flickering. It uses your offhand slot to cycle through all the maps.</p>
         <p class="text-warning"><i class="bi bi-exclamation-triangle"></i><strong>WARNING: </strong> You will lose the item in your offhand slot after running this command.</p>
@@ -151,11 +156,11 @@
       <div class="mb-3 mt-3">
         <label for="cleanCommand">Cleanup command:</label>
         <textarea id="cleanCommand" class="form-control"></textarea>
-        <p>Use this command before disabling or removing the datapack to clean up all the scoreboard objectives.</p>
+        <p>Use this command before disabling or removing the datapack to clean up all the scoreboard objectives. This will also reset all animated maps to their initial frames.</p>
         <button id="copyCleanCommand" class="btn btn-secondary" copy="cleanCommand"><i class="bi bi-copy"></i> Copy cleanup command</button>
       </div>
       
-      <button id="newMapButton" class="btn btn-secondary"><i class="bi bi-arrow-repeat"></i> Go again</button>
+      <button id="goAgainButton" class="btn btn-secondary"><i class="bi bi-arrow-repeat"></i> Go again</button>
     </div>
 
     <div>
@@ -277,6 +282,12 @@
 
     </div>
 
+    <hr>
+
+    <div id="disqus_thread"></div>
+    <script src="./disqus.js"></script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   </body>
+
   <script type="module" src="/src/main.ts"></script>
 </html>
