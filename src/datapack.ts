@@ -105,6 +105,7 @@ export async function generateDataPack(mapData: mapInfo[], version: number) {
             pack: {
                 description: PACK_DESCRIPTION,
                 supported_formats: [45, 81],
+                pack_format: 45,
                 min_format: 45,
                 max_format: 2147483647
             }
@@ -114,7 +115,8 @@ export async function generateDataPack(mapData: mapInfo[], version: number) {
         meta = {
             pack: {
                 description: PACK_DESCRIPTION,
-                supported_formats: [41, 44]
+                supported_formats: [41, 44],
+                pack_format: 41
             }
         }
     }

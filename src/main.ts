@@ -262,6 +262,11 @@ async function mapFromImageData(imgData: ImageData) {
                         val: nbtValues
                     }
                 ]
+            },
+            {
+                name: 'DataVersion',
+                type: TAG.INT,
+                val: version
             }
         ]
     }
@@ -358,9 +363,11 @@ nextImageButton.addEventListener('click', async () => {
     if (!getSettings()) return;
     const nextImageButtonDisabled = nextImageButton.disabled;
     nextImageButton.disabled = true;
+    finishButton.disabled = true;
     await processImage();
     ++currentIndex;
     nextImageButton.disabled = nextImageButtonDisabled;
+    finishButton.disabled = false;
     statusText.innerText = 'Waiting';
     if (settingsList[currentIndex]) loadSettings();
     await loadImage();

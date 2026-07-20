@@ -6,6 +6,8 @@
   <body>
     <h1>Minecraft Animated Map Art Generator</h1>
 
+    <p>Convert gifs to animated Minecraft map arts. Also supports converting .jpg and .png still images.</p>
+
     <div class="alert alert-danger">
       <strong>EPILEPSY WARNING! </strong> Animated maps may flicker when initially loaded. This is fixed with the "caching" command for the datapack that you can copy once it has been generated. Please be mindful of others when using this tool.
     </div>
@@ -131,7 +133,7 @@
         <label for="invisibleItemFrameCheckbox" class="form-label">Invisible item frame:</label> <input id="invisibleItemFrameCheckbox" type="checkbox" class="form-check-input">
       </div>
       <div class="mb-3 mt-3">
-        <label for="nameItemFrameCheckbox" class="form-label">Name item frame:</label> <input id="nameItemFrameCheckbox" type="checkbox" class="form-check-input">
+        <label for="nameItemFrameCheckbox" class="form-label">Name item frame:</label> <input id="nameItemFrameCheckbox" type="checkbox" class="form-check-input" checked>
       </div>
       <div class="mb-3 mt-3">
         <label for="itemFrameCommand">Command:</label><br>
@@ -165,7 +167,7 @@
         <div id="q1" class="collapse">
           <div class="card-body">
             <p>Open the world folder for your world. You can open it using the world select menu: Select your world, click "Edit" at the bottom, and then click "Open World Folder."</p>
-            <p>In <strong>26.1 and above</strong>, your maps are in the <code>data/minecraft/maps</code> folder. If there are no files named with numbers, use 0 as your starting index, otherwise add 1 to the biggest numbered file and use that as your starting index.</p>
+            <p>In <strong>26.1 and above</strong>, your maps are in the <code>data/minecraft/maps</code> folder (create the folder if it doesn't exist yet). If there are no files named with numbers, use 0 as your starting index, otherwise add 1 to the biggest numbered file and use that as your starting index.</p>
             <p>In <strong>1.21.11 and below</strong>, the maps go directly in the <code>data</code> folder. If there are no files starting with "<code>map_</code>" use 0 as your starting index. Otherwise, add 1 to the biggest numbered file prefixed with "<code>map_</code>" and use that as your starting index.</p>
           </div>
         </div>
