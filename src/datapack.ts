@@ -115,14 +115,19 @@ function generateBuildMapCommand_1_20_5(id: string, namespace: string, mapData: 
                 }
             }
         }
-        result += (`execute as @e[type=item_frame,tag=${info.mapName}] run execute unless score @s i_${id} matches 0.. run execute store result score @s s_${id} run data get entity @s Item.components.minecraft:map_id\n`
-            + `execute as @e[type=item_frame,tag=${info.mapName}] run execute unless score @s i_${id} matches 0.. run scoreboard players operation @s s_${id} %= ${info.startingIndex} s_${id}\n`
-            + `execute as @e[type=item_frame,tag=${info.mapName}] run execute unless score @s i_${id} matches 0.. run scoreboard players operation @s s_${id} += ${info.startingIndex}n s_${id}\n`
-            + `execute as @e[type=item_frame,tag=${info.mapName}] run execute unless score @s i_${id} matches 0.. run scoreboard players operation @s i_${id} = @s s_${id}\n`
-            + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute unless score @s i_${id} matches 0.. run execute store result score @s i_${id} run data get entity @s Item.components.minecraft:map_id\n`
-             + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute unless score @s i_${id} matches 0.. run scoreboard players operation @s s_${id} %= ${info.startingIndex} s_${id}\n`
-            + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute unless score @s i_${id} matches 0.. run scoreboard players operation @s s_${id} += ${info.startingIndex}n s_${id}\n`
-            + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute unless score @s i_${id} matches 0.. run scoreboard players operation @s i_${id} = @s s_${id}\n`
+
+        const startingIndex = info.startingIndex;
+        const endingIndex = info.startingIndex + info.mapsHeight * info.mapsWidth - 1;
+        result += (`execute as @e[type=item_frame,tag=${info.mapName}] run execute unless score @s i_${id} matches ${startingIndex}..${endingIndex} run execute store result score @s s_${id} run data get entity @s Item.components.minecraft:map_id\n`
+            + `execute as @e[type=item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players operation @s s_${id} %= ${info.startingIndex} s_${id}\n`
+            + `execute as @e[type=item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players operation @s s_${id} += ${info.startingIndex}n s_${id}\n`
+            + `execute as @e[type=item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players operation @s i_${id} = @s s_${id}\n`
+            + `execute as @e[type=item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players reset @s s_${id}\n`
+            + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches ${startingIndex}..${endingIndex} run execute store result score @s s_${id} run data get entity @s Item.components.minecraft:map_id\n`
+            + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players operation @s s_${id} %= ${info.startingIndex} s_${id}\n`
+            + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players operation @s s_${id} += ${info.startingIndex}n s_${id}\n`
+            + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players operation @s i_${id} = @s s_${id}\n`
+            + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players reset @s s_${id}\n`
             + `execute as @e[type=item_frame,tag=${info.mapName},nbt={Air:${ITEM_FRAME_AIR_TAG}s}] run data merge entity @s {Air:300s}\n`
             + `execute as @e[type=glow_item_frame,tag=${info.mapName},nbt={Air:${ITEM_FRAME_AIR_TAG}s}] run data merge entity @s {Air:300s}\n`)
     }
@@ -193,6 +198,8 @@ export async function generateDataPack(mapData: MapInfo[], version: number, clea
         funcFolder.file('clean_old.mcfunction', cleanOld.replaceAll(NEW_ID_SUB, id) + `scoreboard players set $cleaned i_${id} 1\n`);
     }
 
+    starterFunc += `function ${namespace}:build_map\n`;
+
     for (const info of mapData) {
         if (info.frames > 1) {
             starterFunc += `schedule function ${namespace}:animate_${info.startingIndex} ${info.ticksPerFrame}t\n`;
@@ -203,7 +210,7 @@ export async function generateDataPack(mapData: MapInfo[], version: number, clea
 
     funcFolder.file('clean.mcfunction', generateCleanFunction(id));
 
-    funcFolder.file('starter.mcfunction', starterFunc + (starterFunc.endsWith('\n') ? '' : '\n') + `function ${namespace}:build_map`);
+    funcFolder.file('starter.mcfunction', starterFunc + (starterFunc.endsWith('\n') ? '' : '\n'));
 
     funcFolder.file('build_map.mcfunction', generateBuildMapCommand_1_20_5(id, namespace, mapData, funcFolder));
     return {

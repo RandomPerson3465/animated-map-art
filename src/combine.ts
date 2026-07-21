@@ -7,7 +7,7 @@ import * as commandGenerator from './commands';
 import * as versions from './mc_versions';
 import { e, type HAnchor, type HButton, type HDiv, 
     type HElem, type HInput, type HSelect, type HTextArea } from './aliases';
-import { MAP_INFO_FILE_NAME, generateDataPack, isValidMapInfoFile, type MapInfo, type MapInfoFile, NEW_ID_SUB } from './datapack';
+import { MAP_INFO_FILE_NAME, generateDataPack, isValidMapInfoFile, type MapInfo, type MapInfoFile, NEW_ID_SUB, generateCleanFunction } from './datapack';
 import initializeCopyButtons from './copyButtons'
 import { toggleAll } from './util';
 
@@ -200,31 +200,12 @@ goCombineButton.onclick = async () => {
     toggleAll(combineSection, true);
     goCombineButton.disabled = true;
 
-    const datapack = await generateDataPack(mapData, parseInt(versionSelect.value), generateCleanOldFunction_1_17());
+    const datapack = await generateDataPack(mapData, parseInt(versionSelect.value), mapInfoFiles.map(x => generateCleanFunction(x.id)).join('\n') + '\n');
     downloadDataPackButton.href = URL.createObjectURL(datapack.pack);
     downloadDataPackButton.download = 'maps_datapack.zip';
 
     resultsSection.style.display = 'block';
 
-}
-
-function generateCleanOldFunction_1_17() {
-    let cleanOldFunction = '';
-    for (const mapInfoFile of mapInfoFiles) {
-        for (const mapInfo of mapInfoFile.data) {
-            cleanOldFunction += (`execute as @e[type=item_frame,tag=${mapInfo.mapName}] run scoreboard players operation @s i_${NEW_ID_SUB} = @s i_${mapInfoFile.id}\n`
-                + `execute as @e[type=glow_item_frame,tag=${mapInfo.mapName}] run scoreboard players operation @s i_${NEW_ID_SUB} = @s i_${mapInfoFile.id}\n`
-                + `execute as @e[type=item_frame,tag=${mapInfo.mapName}] run scoreboard players operation @s f_${NEW_ID_SUB} = @s f_${mapInfoFile.id}\n`
-                + `execute as @e[type=glow_item_frame,tag=${mapInfo.mapName}] run scoreboard players operation @s f_${NEW_ID_SUB} = @s f_${mapInfoFile.id}\n`
-            );
-        }
-        cleanOldFunction += (`scoreboard objectives remove i_${mapInfoFile.id}\n`
-            + `scoreboard objectives remove f_${mapInfoFile.id}\n`
-            + `scoreboard objectives remove s_${mapInfoFile.id}\n`
-            + `scoreboard objectives remove c_${mapInfoFile.id}\n`
-        )
-    }
-    return cleanOldFunction;
 }
 
 function reset() {
