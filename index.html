@@ -1,80 +1,294 @@
 <!doctype html>
 <html lang="en">
-  <head><title>Minecraft Animated Map Art Generator</title>  <script type="module" crossorigin src="/assets/index-B-cSvOnz.js"></script>
-</head>
+  <head>
+    <title>Minecraft Animated Map Art Generator</title>
+    <meta name="description" content="Minecraft Animated Map Art Generator - Convert gif, png, and jpg to Minecraft maps">
+    <script type="module" crossorigin src="/animated-map-art/assets/index-Di43hkcw.js"></script>
+    <link rel="stylesheet" crossorigin href="/animated-map-art/assets/index-DPHrIOAU.css">
+  </head>
   <body>
-    <label>Insert file(s)</label>
-    <input id="imageInput" type="file" accept="image/png image/jpeg image/gif" multiple><br>
+    <div class="top-icons">
+        <a href="/"><i class="bi bi-house-fill"></i></a>
+        <a class="document-theme-changer"><i class="bi bi-moon" onclick="setDarkTheme();"></i></a>
+    </div>
+    <h1>Minecraft Animated Map Art Generator</h1>
 
-    <label>Select version:</label><select id="versionSelect">
-      <option value="4786" selected>Java 26.1+</option>
-    </select><br>
+    <p>Convert gifs to animated Minecraft map arts and animates them using a datapack. Also supports converting .jpg and .png still images. Use <a href="./combine.html">this page</a> to retreieve commands from old datapacks, change the version of a datapack, or combine datapacks.</p>
 
-    <button id="submitButton">Submit</button><br>
-
-    <label>Starting index:</label> <input type="number" min="0" value="0" id="mapIndexInput"><br>
-
-    <label>Auto increment index:</label> <input type="checkbox" id="incrementIndexCheckbox" checked><br>
-
-    <p>Current image: <span id="currentIndexText">0</span> of <span id="totalImagesText">0</span></p>
-    <p>Status: <span id="statusText"></span></p>
-
-    <span>
-      <button id="previousImageButton">Previous image</button>
-      <button id="nextImageButton">Next image</button>
-      <button id="finishButton">Finish</button>
-      <button id="cancelButton">Cancel</button>
-    </span>
-
-    <div id="mapSettings">
-      <label>Name (must be unique per world): </label> <input type="text" id="mapNameInput" value="map"><br>
-      <span><label>Size: </label><input type="number" value="1" id="widthInput" min="1"> by <input type="number" value="1" id="heightInput" min="1"> maps</span><br>
-
-      <label>Auto size: </label><input type="checkbox" id="autoSizeCheckbox" checked><br>
-
-      <label>Fit: </label><select id="fitSetting">
-        <option value="resize">Resize to fit</option>
-        <option value="center">Center</option>
-        <option value="topLeft">Top left</option>
-        <option value="topRight">Top right</option>
-        <option value="bottomLeft">Bottom left</option>
-        <option value="bottomRight">Bottom right</option>
-      </select><br>
-
-      <label>Frame rate: </label><select id="ticksPerFrameSetting">
-        <option value="1">20</option>
-        <option value="2">10</option>
-        <option value="3">6.67</option>
-        <option value="4">5</option>
-        <option value="5">4</option>
-        <option value="6">3.33</option>
-        <option value="8">2.5</option>
-        <option value="10">2</option>
-        <option value="12">1.67</option>
-        <option value="15">1.33</option>
-        <option value="20">1</option>
-      </select>
+    <div class="alert alert-danger">
+      <strong>EPILEPSY WARNING! </strong> Animated maps may flicker when initially loaded. This is fixed with the "caching" command for the datapack that you can copy once it has been generated. Please be mindful of others when using this tool.
     </div>
 
-    <p>Original</p>
-    <canvas id="currentImage" width="128" height="128"></canvas><br>
+    <div class="alert alert-warning">
+      <strong>WARNING:</strong> Large maps may cause your Minecraft to lag or crash. Please be reasonable when using this tool.
+    </div>
 
-    <p>Preview</p>
-    <canvas id="previewImage" width="128" height="128"></canvas><br>
+    <div id="firstStuff">
+      <div class="mb-3 mt-3">
+        <label for="imageInput" class="form-label">Insert file(s)</label>
+        <input id="imageInput" class="form-control" type="file" accept=".png,.jpg,.jpeg,.gif,image/png,image/jpeg,image/gif" multiple>
+      </div>
+
+      <div class="settings-container">
+        <div class="mb-3 mt-3">
+          <label for="versionSelect" class="form-label">Select version:</label><select id="versionSelect" class="form-select l-width">
+            <option value="4786" selected>Java 26.1+</option>
+            <option value="3953">Java 1.21-1.21.11</option>
+            <option value="3837">Java 1.20.5-1.20.6</option>
+          </select>
+        </div>
+        <div class="mb-3 mt-3">
+          <label for="mapIndexInput" class="form-label">Starting index: <i class="bi bi-info-circle-fill" data-bs-toggle="tooltip" title="The first number that isn't already used in your .minecraft/data/maps folder. This will be the ID of the first map."></i></label><input type="number" min="0" value="0" id="mapIndexInput" class="form-control m-width">
+        </div>
+        <div class="mb-3 mt-3">
+          <label for="incrementIndexCheckbox" class="form-label">Auto increment index:</label> <input type="checkbox" id="incrementIndexCheckbox" class="form-check-input" checked>
+        </div>
+      </div>
+
+      <button id="submitButton" class="btn btn-primary">Submit</button><br>
+    </div>
+
+    <div id="afterSubmittingStuff" class="after-submitting-stuff">
+      <hr>
+      <p>Current image: <span id="currentIndexText">0</span> of <span id="totalImagesText">0</span></p>
+      <p>Status: <span id="statusText"></span></p>
+
+      <span>
+        <button id="previousImageButton" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Previous image</button>
+        <button id="nextImageButton" class="btn btn-secondary"><i class="bi bi-arrow-right"></i> Next image</button>
+        <button id="finishButton" class="btn btn-primary"><i class="bi bi-fast-forward-circle"></i> Finish</button>
+        <button id="cancelButton" class="btn btn-danger"><i class="bi bi-x-octagon"></i> Cancel</button>
+      </span>
+
+      <div id="mapSettings">
+        <div class="mb-3 mt-3">
+          <label class="form-label" for="mapNameInput">Name (must be unique per world): </label> <input type="text" id="mapNameInput" value="map" class="form-control xl-width">
+        </div>
+        <div class="settings-container">
+          <div class="settings-container">
+            <div class="mb-3 mt-3">
+              <label class="form-label" for="widthInput">Width:</label><input type="number" value="1" id="widthInput" min="1" class="form-control s-width"> maps
+            </div>
+            <div class="mb-3 mt-3">
+              <label class="form-label" for="heightInput">Height:</label><input type="number" value="1" id="heightInput" min="1" class="form-control s-width"> maps
+            </div>
+            <div class="mb-3 mt-3">
+              <label class="form-label" for="autoSizeCheckbox">Auto size:</label> <input type="checkbox" id="autoSizeCheckbox" class="form-check-input" checked>
+            </div>
+          </div>
+          <div class="settings-container">
+            <div class="mb-3 mt-3">
+              <label class="form-label" for="fitSetting">Fit: </label>
+              <select id="fitSetting" class="form-select">
+                <option value="resize">Resize to fit</option>
+                <option value="center">Center</option>
+                <option value="topLeft">Top left</option>
+                <option value="topRight">Top right</option>
+                <option value="bottomLeft">Bottom left</option>
+                <option value="bottomRight">Bottom right</option>
+              </select>
+            </div>
+            <div class="mb-3 mt-3">
+              <label class="form-label" for="ticksPerFrameSetting">Frame rate: </label>
+              <select id="ticksPerFrameSetting" class="form-select">
+                <option value="1">20</option>
+                <option value="2">10</option>
+                <option value="3">6.67</option>
+                <option value="4">5</option>
+                <option value="5">4</option>
+                <option value="6">3.33</option>
+                <option value="7">2.86</option>
+                <option value="8">2.5</option>
+                <option value="9">2.22</option>
+                <option value="10">2</option>
+                <option value="11">1.82</option>
+                <option value="12">1.67</option>
+                <option value="13">1.54</option>
+                <option value="14">1.43</option>
+                <option value="15">1.33</option>
+                <option value="16">1.25</option>
+                <option value="17">1.18</option>
+                <option value="18">1.11</option>
+                <option value="19">1.05</option>
+                <option value="20">1</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="mb-3 mt-3">
+          <label class="form-label" for="opacityThresholdSetting">Opacity threshold (0-255):</label><br>
+          <input type="range" id="opacityThresholdSetting" class="form-range xxl-width" min="0" max="255" step="1">
+          <span id="opacityValue">0</span>
+        </div>
+      </div>
+
+      <p>Current frame:</p>
+      <canvas id="currentImage" width="128" height="128"></canvas><br>
+    </div>
 
     <div id="resultsSection">
-      <a id="downloadButton" href="">Download final map</a><br>
-      <a id="downloadDataPackButton" href="">Download data pack</a><br>
-      <label>Copy command:</label><br>
-      <textarea id="itemFrameCommand"></textarea><br>
-      <p id="commandLengthWarning">This command must be run in a command block as it is too long for chat.</p>
-      <label>Map: </label><select id="mapSelect"></select><br>
-      <label>Glow item frame: </label><input id="glowItemFrameCheckbox" type="checkbox">
-      <label>Invisible item frame: </label><input id="invisibleItemFrameCheckbox" type="checkbox">
-      <label>Name item frame: </label><input id="nameItemFrameCheckbox" type="checkbox">
-      <button id="newMapButton">Go again</button>
+      <hr>
+      <a id="downloadButton" class="btn btn-primary" href=""><i class="bi bi-map"></i> Download maps (.zip)</a><br>
+      <a id="downloadDataPackButton" class="btn btn-secondary" href=""><i class="bi bi-box-seam-fill"></i> Download data pack (.zip)</a><br>
+      <div class="mb-3 mt-3">
+        <label for="mapSelect" class="form-label">Map: </label><select id="mapSelect" class="form-select xl-width"></select>
+      </div>
+      <div class="mb-3 mt-3">
+        <label for="glowItemFrameCheckbox" class="form-label">Glow item frame:</label> <input id="glowItemFrameCheckbox" type="checkbox" class="form-check-input">
+      </div>
+      <div class="mb-3 mt-3">
+        <label for="invisibleItemFrameCheckbox" class="form-label">Invisible item frame:</label> <input id="invisibleItemFrameCheckbox" type="checkbox" class="form-check-input">
+      </div>
+      <div class="mb-3 mt-3">
+        <label for="nameItemFrameCheckbox" class="form-label">Name item frame:</label> <input id="nameItemFrameCheckbox" type="checkbox" class="form-check-input" checked>
+      </div>
+      <div class="mb-3 mt-3">
+        <label for="itemFrameCommand">Command:</label><br>
+        <textarea id="itemFrameCommand" class="form-control"></textarea><br>
+        <p id="commandLengthWarning" class="text-danger"><i class="bi bi-exclamation-triangle"></i> This command must be run in a command block as it is too long for chat.</p>
+        <button id="copyCommand" class="btn btn-secondary" copy="itemFrameCommand"><i class="bi bi-copy"></i> Copy command</button><br>
+      </div>
+      <div id="cacheCommandStuff" class="mb-3 mt-3">
+        <label for="cacheCommand">Caching command:</label>
+        <textarea id="cacheCommand" class="form-control"></textarea>
+        <p>This command stops the animated map art from flickering. It uses your offhand slot to cycle through all the maps.</p>
+        <p class="text-warning"><i class="bi bi-exclamation-triangle"></i><strong>WARNING: </strong> You will lose the item in your offhand slot after running this command.</p>
+        <button id="copyCacheCommand" class="btn btn-secondary" copy="cacheCommand"><i class="bi bi-copy"></i> Copy caching command</button>
+      </div>
+      <div class="mb-3 mt-3">
+        <label for="cleanCommand">Cleanup command:</label>
+        <textarea id="cleanCommand" class="form-control"></textarea>
+        <p>Use this command before disabling or removing the datapack to clean up all the scoreboard objectives. This will also reset all animated maps to their initial frames.</p>
+        <button id="copyCleanCommand" class="btn btn-secondary" copy="cleanCommand"><i class="bi bi-copy"></i> Copy cleanup command</button>
+      </div>
+      
+      <button id="goAgainButton" class="btn btn-secondary"><i class="bi bi-arrow-repeat"></i> Go again</button>
     </div>
 
+    <div>
+      <hr>
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q1">How do I find what starting index to use?</a>
+        </div>
+        <div id="q1" class="collapse">
+          <div class="card-body">
+            <p>Open the world folder for your world. You can open it using the world select menu: Select your world, click "Edit" at the bottom, and then click "Open World Folder."</p>
+            <p>In <strong>26.1 and above</strong>, your maps are in the <code>data/minecraft/maps</code> folder (create the folder if it doesn't exist yet). If there are no files named with numbers, use 0 as your starting index, otherwise add 1 to the biggest numbered file and use that as your starting index.</p>
+            <p>In <strong>1.21.11 and below</strong>, the maps go directly in the <code>data</code> folder. If there are no files starting with "<code>map_</code>" use 0 as your starting index. Otherwise, add 1 to the biggest numbered file prefixed with "<code>map_</code>" and use that as your starting index.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q2">Where do I extract the map files?</a>
+        </div>
+        <div id="q2" class="collapse">
+          <div class="card-body">
+            <p>You will need access to the world files. <strong class="text-warning">Before doing anything, make sure you exit the world (or shut off the server if you're playing on a server) to make sure everything saves properly.</strong></p>
+            <p>Find the folder in which your maps are stored in as shown above. Then, extract the map files into this folder. <strong class="text-warning">Make sure you replace <code>last_id.dat</code> (26.1+) or <code>idcounts.dat</code> (1.21.11 and below)!</strong> You can re-enter your world once you're done.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q3">Where do I put the datapack and how do I enable it?</a>
+        </div>
+        <div id="q3" class="collapse">
+          <div class="card-body">
+            <p>The datapack goes into the <code>datapacks</code> folder in your world folder. You can be in the world while you do this. <strong class="text-warning">You do NOT need to extract the zip file.</strong></p>
+            <p>After that, run the command <code>/datapack list</code> and then use <code>/datapack enable</code> on your datapack file to enable it (if you ran <code>/datapack list</code> the file should appear as an autocomplete suggestion).</p>
+          </div>
+        </div>
+      </div>   
+      
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q4">Why is the animated map flickering and how do I fix it?</a>
+        </div>
+        <div id="q4" class="collapse">
+          <div class="card-body">
+            <p>It does this because the game reads the map data from disk whenever the maps change, which is very slow. Eventually it gets better if the game decides to cache the map data so it doesn't have to read from disk every time.</p>
+            <p>You can stop the flickering by forcing the game to cache all the maps by running the cache command, which cycles through the maps using your offhand slot at around 20 maps per second. <strong class="text-warning">Note that if you have an item in your offhand when you run this command you will lose it!</strong> If there are a lot of maps or frames you can speed this process up in 1.20.3+ using the command <code>/tick rate 1000</code> (note that this will speed up the rest of your game as well). Use <code>/tick rate 20</code> to restore the default tick rate.</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q5">Why are animated map arts so loud?</a>
+        </div>
+        <div id="q5" class="collapse">
+          <div class="card-body">
+            <p>The reason is that item frames always play a popping sound whenever the item inside changes. To turn this off, go to your game options, select Music & Sounds, and slide Friendly Creatures all the way to OFF.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q6">How do I get the commands back for another datapack that I generated using this tool?</a>
+        </div>
+        <div id="q6" class="collapse">
+          <div class="card-body">
+            <p>You can retrieve the commands from a datapack using <a href="./combine.html">this page</a>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q7">How do I merge datapacks that I generated using this tool?</a>
+        </div>
+        <div id="q7" class="collapse">
+          <div class="card-body">
+            <p>You can merge the datapacks by combing them using this <a href="./combine.html">this page</a>.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q8">I want to delete a datapack generated by this tool. How do I clean up the mess of scoreboard objectives created by it?</a>
+        </div>
+        <div id="q8" class="collapse">
+          <div class="card-body">
+            <p>Copy and run the clean command. This will delete all scoreboard objectives created by the datapack. Then, use <code>/datapack disable</code> to disable the datapack and remove the datapack from your <code>datapacks</code> folder.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q9">Does this work on survival worlds?</a>
+        </div>
+        <div id="q9" class="collapse">
+          <div class="card-body">
+            <p>Running the commands used to obtain the item frames and map items, enable the datapack, etc. requires cheats or operator permissions in vanilla Minecraft. If you want to temporarily enable cheats to run the commands to set things up, press "Open to LAN", set "Allow Commands" to ON, and start the LAN world.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <a class="btn collapsed" data-bs-toggle="collapse" href="#q10">Is this tool safe for privacy?</a>
+        </div>
+        <div id="q10" class="collapse">
+          <div class="card-body">
+            <p>This tool runs 100% in your browser, we do NOT upload your files to any server nor collect any data.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <hr>
+
+    <div id="disqus_thread"></div>
+    <script src="./disqus.js"></script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
   </body>
 
 </html>
