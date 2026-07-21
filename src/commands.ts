@@ -1,6 +1,6 @@
-import { type mapInfo, ITEM_FRAME_AIR_TAG, PREFIX } from "./datapack";
+import { type MapInfo, ITEM_FRAME_AIR_TAG, PREFIX } from "./datapack";
 
-export function generateItemFrameCommand_1_20_5(mapInfo: mapInfo, glowItemFrame: boolean, invisItemFrame: boolean, nameItemFrame: boolean) {
+export function generateItemFrameCommand_1_20_5(mapInfo: MapInfo, glowItemFrame: boolean, invisItemFrame: boolean, nameItemFrame: boolean) {
     const glow = glowItemFrame ? 'glow_' : '';
     const invis = invisItemFrame ? 'Invisible:1b,' : '';
     const index = mapInfo.startingIndex;
