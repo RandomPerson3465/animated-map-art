@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Minecraft Animated Map Art Generator</title>
+    <meta name="description" content="Minecraft Animated Map Art Generator - Convert gif, png, and jpg to Minecraft maps">
+    <script type="module" crossorigin src="/animated-map-art/assets/combine-vVAroaQj.js"></script>
+    <link rel="modulepreload" crossorigin href="/animated-map-art/assets/aliases-mQp1LQ_u.js">
+    <link rel="stylesheet" crossorigin href="/animated-map-art/assets/aliases-DPHrIOAU.css">
+  </head>
+  <body>
+    <div class="top-icons">
+        <a href="/"><i class="bi bi-house-fill"></i></a>
+        <a class="document-theme-changer"><i class="bi bi-moon" onclick="setDarkTheme();"></i></a>
+    </div>
+    <h1>Minecraft Animated Map Art Generator</h1>
+
+    <p>Retrieve commands, consolidate datapacks, delete map arts, and change versions. Return to the main page <a href="../">here</a>.</p>
+
+    <hr>
+
+    <div id="firstStuff">
+        <div class="mb-3 mt-3">
+            <label for="datapackInput" class="form-label">Insert datapack(s)</label>
+            <input id="datapackInput" class="form-control" type="file" accept=".zip,application/zip,application/x-zip,application/x-zip-compressed" multiple>
+        </div>
+        <button id="getCommandsButton" class="btn btn-primary"><i class="bi bi-slash-square"></i> Retrieve commands</button>
+        <button id="combineButton" class="btn btn-secondary"><i class="bi bi-boxes"></i> Combine datapacks/change version</button>
+    </div>
+
+    <div id="commandsSection">
+        <div class="mb-3 mt-3">
+        <label for="mapSelect" class="form-label">Map: </label><select id="mapSelect" class="form-select"></select>
+      </div>
+      <div class="mb-3 mt-3">
+        <label for="glowItemFrameCheckbox" class="form-label">Glow item frame:</label> <input id="glowItemFrameCheckbox" type="checkbox" class="form-check-input">
+      </div>
+      <div class="mb-3 mt-3">
+        <label for="invisibleItemFrameCheckbox" class="form-label">Invisible item frame:</label> <input id="invisibleItemFrameCheckbox" type="checkbox" class="form-check-input">
+      </div>
+      <div class="mb-3 mt-3">
+        <label for="nameItemFrameCheckbox" class="form-label">Name item frame:</label> <input id="nameItemFrameCheckbox" type="checkbox" class="form-check-input" checked>
+      </div>
+      <div class="mb-3 mt-3">
+        <label for="itemFrameCommand">Command:</label><br>
+        <textarea id="itemFrameCommand" class="form-control"></textarea><br>
+        <p id="commandLengthWarning" class="text-danger"><i class="bi bi-exclamation-triangle"></i> This command must be run in a command block as it is too long for chat.</p>
+        <button id="copyCommand" class="btn btn-secondary" copy="itemFrameCommand"><i class="bi bi-copy"></i> Copy command</button><br>
+      </div>
+      <div id="cacheCommandStuff" class="mb-3 mt-3">
+        <label for="cacheCommand">Caching command:</label>
+        <textarea id="cacheCommand" class="form-control"></textarea>
+        <p>This command stops the animated map art from flickering. It uses your offhand slot to cycle through all the maps.</p>
+        <p class="text-warning"><i class="bi bi-exclamation-triangle"></i><strong>WARNING: </strong> You will lose the item in your offhand slot after running this command.</p>
+        <button id="copyCacheCommand" class="btn btn-secondary" copy="cacheCommand"><i class="bi bi-copy"></i> Copy caching command</button>
+      </div>
+      <div class="mb-3 mt-3">
+        <label for="cleanCommand">Cleanup command:</label>
+        <textarea id="cleanCommand" class="form-control"></textarea>
+        <p>Use this command before disabling or removing the datapack to clean up all the scoreboard objectives.</p>
+        <button id="copyCleanCommand" class="btn btn-secondary" copy="cleanCommand"><i class="bi bi-copy"></i> Copy cleanup command</button>
+      </div>
+    </div>
+
+    <div id="combineSection">
+        <div class="mb-3 mt-3">
+          <label for="versionSelect" class="form-label">Select version:</label><select id="versionSelect" class="form-select l-width">
+            <option value="3953">Java 1.21+</option>
+            <option value="3837">Java 1.20.5-1.20.6</option>
+          </select>
+        </div>
+
+        <div class="mb-3 mt-3">
+            <select id="mapSelect2" class="form-select"></select>
+        </div>
+        <button id="removeMapButton" class="btn btn-danger"><i class="bi bi-trash"></i> Remove</button>
+        <p><strong class="text-warning">Remember to delete or disable the old datapacks before installing the consolidated one.</strong></p>
+        <p>You do not need to run the cleanup commands for the old datapacks, the new one will automatically do it for you upon loading.</p>
+        <button id="goCombineButton" class="btn btn-success"><i class="bi bi-check-square"></i> Go!</button>
+    </div>
+
+    <div id="resultsSection">
+        <hr>
+        <a id="downloadDataPackButton" class="btn btn-primary" href=""><i class="bi bi-box-seam-fill"></i> Download data pack (.zip)</a><br><br>
+        <button id="goAgainButton" class="btn btn-secondary"><i class="bi bi-arrow-repeat"></i> Go again</button>
+    </div>
+
+    <hr>
+    <div id="disqus_thread"></div>
+    <script src="./disqus.js"></script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  </body>
+
+</html>
