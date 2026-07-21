@@ -81,10 +81,9 @@ function generateBuildMapCommand_1_20_5(id: string, namespace: string, mapData: 
         if (info.frames > 1) {
             const mapsSize = info.mapsWidth * info.mapsHeight;
             const nextIndex = info.startingIndex + mapsSize * info.frames;
-            funcFolder.file(`animate_${info.startingIndex}.mcfunction`,
-                `scoreboard players set ${info.startingIndex} s_${id} ${mapsSize}\n`
-                + `scoreboard players set ${info.startingIndex}n s_${id} ${info.startingIndex}\n`
-                + `execute as @e[type=item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute unless score @s f_${id} matches 0.. run scoreboard players operation @s f_${id} = @s i_${id}\n`
+            result += (`scoreboard players set ${info.startingIndex} s_${id} ${mapsSize}\n`
+                + `scoreboard players set ${info.startingIndex}n s_${id} ${info.startingIndex}\n`)
+            funcFolder.file(`animate_${info.startingIndex}.mcfunction`, `execute as @e[type=item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute unless score @s f_${id} matches 0.. run scoreboard players operation @s f_${id} = @s i_${id}\n`
                 + `execute as @e[type=glow_item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute unless score @s f_${id} matches 0.. run scoreboard players operation @s f_${id} = @s i_${id}\n`
                 + `execute as @e[type=item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute unless score @s f_${id} matches ${nextIndex}.. run scoreboard players operation @s f_${id} += ${info.startingIndex} s_${id}\n`
                 + `execute as @e[type=item_frame,tag=${info.mapName},nbt=!{Air:${ITEM_FRAME_AIR_TAG}s}] run execute if score @s f_${id} matches ${nextIndex}.. run scoreboard players operation @s f_${id} = @s i_${id}\n`
@@ -121,14 +120,18 @@ function generateBuildMapCommand_1_20_5(id: string, namespace: string, mapData: 
         const startingIndex = info.startingIndex;
         const endingIndex = info.startingIndex + info.mapsHeight * info.mapsWidth - 1;
         result += (`execute as @e[type=item_frame,tag=${info.mapName}] run execute unless score @s i_${id} matches ${startingIndex}..${endingIndex} run execute store result score @s s_${id} run data get entity @s Item.components.minecraft:map_id\n`
+            + `execute as @e[type=item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players operation @s s_${id} -= ${info.startingIndex}n s_${id}\n`
             + `execute as @e[type=item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players operation @s s_${id} %= ${info.startingIndex} s_${id}\n`
             + `execute as @e[type=item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players operation @s s_${id} += ${info.startingIndex}n s_${id}\n`
             + `execute as @e[type=item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players operation @s i_${id} = @s s_${id}\n`
+            + `execute as @e[type=item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players operation @s f_${id} = @s i_${id}\n`
             + `execute as @e[type=item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players reset @s s_${id}\n`
-            + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches ${startingIndex}..${endingIndex} run execute store result score @s s_${id} run data get entity @s Item.components.minecraft:map_id\n`
+            + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute unless score @s i_${id} matches ${startingIndex}..${endingIndex} run execute store result score @s s_${id} run data get entity @s Item.components.minecraft:map_id\n`
+            + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players operation @s s_${id} -= ${info.startingIndex}n s_${id}\n`
             + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players operation @s s_${id} %= ${info.startingIndex} s_${id}\n`
             + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players operation @s s_${id} += ${info.startingIndex}n s_${id}\n`
             + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players operation @s i_${id} = @s s_${id}\n`
+            + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players operation @s f_${id} = @s i_${id}\n`
             + `execute as @e[type=glow_item_frame,tag=${info.mapName}] run execute if score @s s_${id} matches 0.. run scoreboard players reset @s s_${id}\n`
             + `execute as @e[type=item_frame,tag=${info.mapName},nbt={Air:${ITEM_FRAME_AIR_TAG}s}] run data merge entity @s {Air:300s}\n`
             + `execute as @e[type=glow_item_frame,tag=${info.mapName},nbt={Air:${ITEM_FRAME_AIR_TAG}s}] run data merge entity @s {Air:300s}\n`)
