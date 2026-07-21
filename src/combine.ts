@@ -7,7 +7,7 @@ import * as commandGenerator from './commands';
 import * as versions from './mc_versions';
 import { e, type HAnchor, type HButton, type HDiv, 
     type HElem, type HInput, type HSelect, type HTextArea } from './aliases';
-import { MAP_INFO_FILE_NAME, generateDataPack, isValidMapInfoFile, type MapInfo, type MapInfoFile, NEW_ID_SUB, generateCleanFunction } from './datapack';
+import { MAP_INFO_FILE_NAME, generateDataPack, isValidMapInfoFile, type MapInfo, type MapInfoFile } from './datapack';
 import initializeCopyButtons from './copyButtons'
 import { toggleAll } from './util';
 
@@ -39,6 +39,7 @@ const combineSection = e<HDiv>('combineSection');
 const resultsSection = e<HDiv>('resultsSection');
 const goAgainButton = e<HButton>('goAgainButton');
 let mapInfoFiles : MapInfoFile[] = [];
+let ancestorIDs : Set<string> = new Set();
 
 function failAlert(fileName: string, reason: string) {
     alert(`Failed to load datapack ${fileName}: ${reason}`);
@@ -52,6 +53,7 @@ function collapseToDataPackVersion(version: number) {
 
 async function loadAll() {
     mapInfoFiles = [];
+    ancestorIDs.clear();
     for (const file of datapackInput.files!) {
         const zip = await JSZip.loadAsync(file);
         const mapInfoFileName = MAP_INFO_FILE_NAME + '.json';
@@ -65,6 +67,10 @@ async function loadAll() {
             const mapInfoFileJson = JSON.parse(mapInfoFileData);
             if (!isValidMapInfoFile(mapInfoFileJson)) return failAlert(file.name, `${mapInfoFileName} is not valid`);
             mapInfoFiles.push(mapInfoFileJson);
+            ancestorIDs.add(mapInfoFileJson.id);
+            for (const ancestor of mapInfoFileJson.ancestors) {
+                ancestorIDs.add(ancestor);
+            }
         } catch (err) {
             return failAlert(file.name, `failed to parse ${mapInfoFileName}`);
         }
@@ -186,7 +192,7 @@ goCombineButton.onclick = async () => {
     for (const mapInfoFile of mapInfoFiles) {
         for (const mapInfo of mapInfoFile.data) {
             const foundDuplicateName = mapData.find(x => x.mapName === mapInfo.mapName);
-            if (foundDuplicateName) return alert(`The name ${mapInfo.mapName} is duplicated. Please remove one of the duplicates before proceeding.`);
+            if (foundDuplicateName) return alert(`The name ${mapInfo.mapName} is duplicated. Please remove the duplicates before proceeding.`);
             const startingIndex = mapInfo.startingIndex;
             const endingIndex = endingIndexOf(mapInfo);
             const overlap = mapData.find(x => (startingIndex <= x.startingIndex && x.startingIndex <= endingIndex) ||
@@ -200,7 +206,7 @@ goCombineButton.onclick = async () => {
     toggleAll(combineSection, true);
     goCombineButton.disabled = true;
 
-    const datapack = await generateDataPack(mapData, parseInt(versionSelect.value), mapInfoFiles.map(x => generateCleanFunction(x.id)).join('\n') + '\n');
+    const datapack = await generateDataPack(mapData, parseInt(versionSelect.value), [...ancestorIDs]);
     downloadDataPackButton.href = URL.createObjectURL(datapack.pack);
     downloadDataPackButton.download = 'maps_datapack.zip';
 
